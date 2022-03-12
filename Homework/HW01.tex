@@ -1,0 +1,442 @@
+\documentclass[a4paper, 10pt]{article}
+\usepackage[utf8]{inputenc}
+
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{mathrsfs}
+% \usepackage{mathabx}
+
+\usepackage{geometry}
+\geometry{left=2.0cm, right=2.0cm, top=2cm, bottom=2.5cm}
+\usepackage{parskip}
+
+\usepackage{bm}
+\usepackage{enumitem}
+
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    citecolor=blue,
+    urlcolor=cyan,
+}
+
+\usepackage{listings}
+\usepackage{xcolor}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{stdcodestyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\small,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=stdcodestyle}
+
+\title{\bfseries Introduction to Machine Learning \\ Answers to Exercise 1}
+\author{Jingtao Min}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{Multivariate normal distribution}
+
+\begin{enumerate}[label=(\alph*)]
+
+\item Let d-dimensional random vector $\mathbf{X}=(X_1, ..., X_d)$ follow standard Gaussian distribution, i.e. $\mathbf{X}\sim \mathcal{N}_d(\mathbf{0}, \mathbf{I})$. Define $\mathbf{Y} = A \mathbf{X} + \bm{\mu}$ where $A \in \mathbb{R}^{d\times d}$ and $\bm{\mu}\in \mathbb{R}^d$. Then the characteristic function:
+\begin{equation}
+    \begin{aligned}
+        \varphi_\mathbf{Y}(\mathbf{t}) &= \mathbb{E}\left[\exp\left(i\mathbf{t}^T \mathbf{Y}\right)\right] = \mathbb{E}\left[\exp \left(i \mathbf{t}^T (A\mathbf{X} + \bm{\mu}) \right)\right] = \exp \left(i\mathbf{t}^T \bm{\mu}\right) \mathbb{E}\left[\exp\left(i\mathbf{t}^T A \mathbf{X}\right)\right] \\ 
+        &= \exp \left(i\mathbf{t}^T \bm{\mu}\right) \mathbb{E}\left[\exp\left(i\left(A^T \mathbf{t}\right)^T \mathbf{X} \right)\right] = \exp\left(i\mathbf{t}^T \bm{\mu}\right) \, \exp\left[i \left(A^T \mathbf{t}\right)^T \mathbf{0} - \frac{1}{2} \left(A^T \mathbf{t}\right)^T \mathbf{I} \left(A^T \mathbf{t}\right) \right] \\ 
+        &= \exp\left(i\mathbf{t}^T \bm{\mu} -\frac{1}{2} \mathbf{t}^T AA^T \mathbf{t}\right) = \exp\left(i\mathbf{t}^T \bm{\mu} -\frac{1}{2} \mathbf{t}^T \bm{\Sigma} \mathbf{t}\right)
+    \end{aligned}
+\end{equation}
+Therefore $\mathbf{Y} \sim \mathcal{N}_d (\bm{\mu}, AA^T)$.
+
+\item Let $B \in \mathbb{R}^{r\times d}$, apply the same procedure to $B \mathbf{Y}$:
+\begin{equation}
+    \begin{aligned}
+        \varphi_{B\mathbf{Y}}(\mathbf{t}) &= \mathbb{E}\left[\exp\left(i\mathbf{t}^T B \mathbf{Y}\right)\right] = \mathbb{E} \left[\exp \left(i (B^T \mathbf{t})^T \mathbf{Y}\right)\right] \\ 
+        &= \exp\left(i(B^T \mathbf{t})^T \bm{\mu} - \frac{1}{2} (B^T \mathbf{t})^T (AA^T) (B^T \mathbf{t})\right) \\ 
+        &= \exp\left(i\mathbf{t}^T B\bm{\mu} - \frac{1}{2} \mathbf{t}^T BAA^TB^T \mathbf{t} \right)
+    \end{aligned}
+\end{equation}
+where $\mathbf{t}\in \mathbb{R}^r$. Therefore $B\mathbf{Y} \sim \mathcal{N}_r (B\bm{\mu}, BAA^TB^T)$.
+
+\item Let $\mathbf{X} = (X_1, X_2)$ be a bivariate normal random variable with mean $\mathbf{\mu} = (1, 1)$ and covariance $\Sigma = \begin{pmatrix}3 & 1 \\ 1 & 2\end{pmatrix}$. Note that the two random variables desired can be given by:
+\begin{equation}
+    \begin{pmatrix} Y \\ Z \end{pmatrix} = \begin{pmatrix} X_1 + X_2 \\ X_1 - X_2 \end{pmatrix} = 
+    \begin{pmatrix} 1 & 1 \\ 1 & -1 \end{pmatrix} \begin{pmatrix} X_1 \\ X_2 \end{pmatrix} = \begin{pmatrix} 1 & 1 \\ 1 & -1 \end{pmatrix} \mathbf{X} = A \mathbf{X}
+\end{equation}
+Invoking the conclusion of the previous question, we know that $(Y,Z)$ is also a Gaussian random vector:
+\begin{equation}
+    \mathbf{X}' = \begin{pmatrix} Y \\ Z \end{pmatrix} \sim \mathcal{N}_2 \left(A \bm{\mu}, A\Sigma A^T\right) = \mathcal{N}_2 \left(\begin{pmatrix} 2 \\ 0 \end{pmatrix}, \begin{pmatrix} 7 & 1 \\ 1 & 3 \end{pmatrix}\right) = \mathcal{N}_2\left(\bm{\mu}', \Sigma'\right)
+\end{equation}
+Recall that the density function is proportional to $\exp\{-\frac{1}{2}(\mathbf{X}' - \bm{\mu})^T (\Sigma')^{-1} (\mathbf{X}' - \bm{\mu})\}$, the conditional distribution can be obtained by setting $Z=0$. Since $\mu_2' = \bar{Z} = 0$, the conditional distribution can be rewritten as:
+\begin{equation}
+    \begin{aligned}
+        p_{Y|Z}(y|0) &= \frac{p_{Y,Z}(y,0)}{p_Z(0)} \propto p_{Y,Z}(y,0) = \exp\left\{-\frac{1}{2}\begin{pmatrix}y-2 \\ 0 \end{pmatrix}^T  \begin{pmatrix} 7 & 1 \\ 1 & 3 \end{pmatrix}^{-1} \begin{pmatrix}y-2 \\ 0 \end{pmatrix}\right\} \\ 
+        &\propto \exp\left\{-\frac{(y-2)^2}{2\times {\rm det}(\Sigma)}/3\right\} = \exp\left\{-\frac{1}{2} \frac{(y-2)^2}{20/3}\right\}
+    \end{aligned}
+\end{equation}
+Therefore the conditional distribution $Y |_{Z=0} \sim \mathcal{N}_2\left(2, \frac{20}{3}\right)$.
+
+\end{enumerate}
+
+
+\section{Local vs. global optima}
+
+\begin{enumerate}[label=(\alph*)]
+\item A function $f: \mathbb{R}^n \mapsto \mathbb{R}$ is convex if dom$f$ is a convex set and if for all $\mathbf{x}, \mathbf{y} \in$ dom$f$, and $0\leq \theta \leq 1$, we have $f(\theta \mathbf{x} + (1 - \theta) \mathbf{y}) \leq \theta f(\mathbf{x}) + (1 - \theta) f(\mathbf{y})$. It is strictly convex if strict inequality holds whenever $\mathbf{x}\neq \mathbf{y}$ and $0 < \theta < 1$.
+\begin{enumerate}[label=(\arabic*)]
+    \item \textbf{The sum of one \textit{strictly convex} function and \textit{convex} functions is \textit{strictly convex}.}
+    
+    Proof:
+    
+    Let $g$ be a \textit{strictly convex} function, $h$ be a convex function, which share a convex domain $\Omega$. Let $f = g + h$, so $\forall \mathbf{x}\neq \mathbf{y} \in \Omega$ and $0 < \theta < 1$, we have:
+    \begin{equation}
+        \begin{aligned}
+            f(\theta \mathbf{x} + (1-\theta) \mathbf{y}) &= g(\theta \mathbf{x} + (1-\theta) \mathbf{y}) + h(\theta \mathbf{x} + (1-\theta) \mathbf{y}) \\ 
+            &< \left[\theta g(\mathbf{x}) + (1-\theta) g(\mathbf{y})\right] + \left[\theta h(\mathbf{x}) + (1-\theta) h(\mathbf{y})\right] \\ 
+            &=\theta \left[g(\mathbf{x}) + h(\mathbf{x})\right] + (1 - \theta) \left[g(\mathbf{y}) + h(\mathbf{y})\right]\\ 
+            &= \theta f(\mathbf{x}) + (1-\theta) f(\mathbf{y}) \quad \square
+        \end{aligned}
+    \end{equation}
+    
+    \item \textbf{Any local minimum of a convex function is also a global minimum.}
+    
+    Proof:
+    
+    Let $f$ be a \textit{convex} function. $\mathbf{x}_0$ is a local minimum, so that in its $\delta$-neighbourhood, $f(\mathbf{x}) \geq f(\mathbf{x}_0)$. Suppose $\exists \mathbf{x}^* \in \Omega$ such that $f(\mathbf{x}^*) < f(\mathbf{x}_0)$. According to convexity, for a chosen $\theta = \delta/2\left\|\mathbf{x}_0 - \mathbf{x}^*\right\|$,
+    \begin{equation}
+        f(\mathbf{x}') = f(\theta \mathbf{x}_* + (1 - \theta) \mathbf{x}_0 ) \leq \theta f(\mathbf{x}^*) + (1 - \theta) f(\mathbf{x}_0) < \theta f(\mathbf{x}_0) + (1 - \theta) f(\mathbf{x}_0) = f(\mathbf{x}_0)
+    \end{equation}
+    However $\mathbf{x}' = \theta \mathbf{x}_* + (1 - \theta) \mathbf{x}_0$ is in the $\delta$-neighbourhood of $\mathbf{x}$. This relation thus contradicts definition of local minimum. Therefore, $\forall \mathbf{x} \in \Omega$, $f(\mathbf{x}) \geq f(\mathbf{x}_0)$. In other words, the local minimum is also a global minimum. $\quad \square$
+    
+    \item \textbf{Assuming sufficient smoothness, \textit{strictly convex} functions must have positive semi-definite Hessians, but not necessarily positive definite.}
+    
+    Counterinstance: $f(\mathbf{x}) = x_1^4 + x_2^4$. By definition $f$ is indeed strictly convex, but $H_f(0) = \mathbf{0}$ is trivial, thus does not count as positive-definite. $\quad \square$
+    
+    \textbf{Every \textit{strictly convex} function has a unique global minimum.}
+    
+    Proof:
+    
+    Let $f$ be a \textit{convex} function. Let $\mathbf{x}^*$ be its global minimum. Suppose $\exists \mathbf{x}'\neq \mathbf{x}^*$ so that $f(\mathbf{x}') = f(\mathbf{x}^*) = \min_{\mathbf{x}\in \Omega} f(\mathbf{x})$. By definition we have
+    \begin{equation}
+        f(\theta \mathbf{x}' + (1-\theta) \mathbf{x}^*) < \theta f(\mathbf{x}') + (1-\theta) f(\mathbf{x}^*) = \theta \min_{\mathbf{x}\in \Omega} f(\mathbf{x}) + (1 - \theta)\min_{\mathbf{x}\in \Omega} f(\mathbf{x}) = \min_{\mathbf{x}\in \Omega} f(\mathbf{x})
+    \end{equation}
+    which contradicts the definition of global minimum. Therefore $\forall \mathbf{x}\neq \mathbf{x}^* \in \Omega$, $f(\mathbf{x}) > f(\mathbf{x}^*)$. In other words, the global minimum is unique. $\quad \square$
+    
+\end{enumerate}
+
+\item Properties of Hessian.
+\begin{enumerate}[label=(\arabic*)]
+    \item \textbf{For non-convex function, its Hessian can be positive-(semi-)definite, negative-(semi-)definite or indefinite at different points.} There is no constraint that it be negative semi-definite.
+    
+    Simplest counterinstance: $f(x) = x^3$. For $x\geq 0$ the Hessian is positive semi-definite, while for $x\leq 0$ it is negative semi-definite. $\quad \square$
+    
+    \item \textbf{Positive-definiteness of the Hessian alone cannot determine optimality for convex functions.}
+    
+    Simplest counterinstance: $f(x) = x^2$. The Hessian is positive-definite everywhere, but $x^*=0$ is the only local and global minimum. $\quad \square$
+    
+    \item \textbf{The function $f$ has a local minimum at point $\mathbf{x}_0$ if $\nabla f(\mathbf{x}_0) = \mathbf{0}$ and the Hessian matrix is positive definite.} Positive determinant has not guaranteed implication as to the local geometry:
+    
+    Simplest counterinstance: $f(\mathbf{x}) = -x_1^2 - x_2^2$. At $\mathbf{x} = 0$ we have:
+    \begin{equation}
+        \nabla f(\mathbf{0}) = \begin{pmatrix} -2x_1 \\ -2x_2 \end{pmatrix}_\mathbf{0} = \mathbf{0},\quad 
+        H_f(\mathbf{x}) \equiv H_f(\mathbf{0}) = \begin{pmatrix}-2, -2\end{pmatrix},\quad {\det}\left(H_f\right) \equiv 4 > 0
+    \end{equation}
+    But apparently the function is concave and has no local minimum.
+    
+\end{enumerate}
+
+\item Micellaneous
+\begin{enumerate}[label=(\arabic*)]
+    \item \textbf{The set of all orthogonal $n\times n$ matrices is NOT a convex set in $\mathbb{R}^{n\times n}$}.
+    
+    This is quite apparent, as the sum of different orthogonal basis does not yield another orthogonal basis.
+    
+    \item \textbf{$f(x_1,x_2) = \frac{1}{x_1x_2}$ on $\mathbb{R}_{++}^2$ (all non-negative real numbers) is convex.}
+    
+    Proof:
+    
+    Consider any point inside the domain, we have:
+    \begin{equation}
+        H_f(x_1, x_2) = \begin{pmatrix} \frac{2}{x_1^3 x_2} & \frac{1}{x_1^2 x_2^2} \\ \frac{1}{x_1^2 x_2^2} & \frac{2}{x_1 x_2^3} \end{pmatrix} = \frac{1}{x_1^3 x_2^3} \begin{pmatrix} 2x_2^2 & x_1x_2 \\ x_1x_2 & 2x_1^2 \end{pmatrix} = \frac{1}{x_1^3 x_2^3} \left[
+        \begin{pmatrix}
+            x_2^2 & 0 \\ 0 & x_1^2
+        \end{pmatrix} + 
+        \begin{pmatrix} x_2 \\ x_1 \end{pmatrix}\begin{pmatrix} x_2 \\ x_1 \end{pmatrix}^T\right]
+    \end{equation}
+    The Hessian is positive definite every point within the domain, hence the function is convex. $\square$
+    
+    \item \textbf{For the regularized linear least squares $f(\mathbf{w}) = \left\| \Phi \mathbf{w} - \mathbf{y} \right\|^2 + \lambda \left\| \mathbf{w} \right\|^2$ where $\lambda >0$ and $\Phi \in \mathbb{R}^{n\times d}$, if $n\geq d$ and the columns of $\Phi$ are independent, then $f$ has a unique global minimum.} However, with regularization, the condition for unique global minimum can be relaxed such that $\Phi^T\Phi + \lambda \mathbf{I} \succ 0$.
+    
+\end{enumerate}
+
+\end{enumerate}
+
+\section{Linear regression}
+
+Consider the least squares misfit in two dimensional model space:
+\begin{equation}
+    L(w_0, w_1) = \frac{1}{2n} \sum_{i=1}^n (y_i - w_0 - w_1 x_i)^2
+\end{equation}
+\begin{enumerate}[label=(\alph*)]
+    \item Fixing $w_0=0$, the optimality condition for $w_1$ is computed by:
+    \begin{equation}
+        \frac{\partial L}{\partial w_1} = -\frac{1}{n} \sum_{i=1}^n x_i(y_i - w_1 x_i) = \frac{1}{n} \left[\left(\sum_{i=1}^n x_i^2\right) w_1 - \sum_{i=1}^n x_i y_i \right] = 0
+    \end{equation}
+    This yields the following linear fit:
+    \begin{equation}
+        w_1^* = \arg\min_{w_1} L(0, w_1) = \frac{\sum_{i=1}^n x_i y_i}{\sum_{i=1}^n x_i^2} = \left(\sum_{i=1}^n x_i^2\right)^{-1} \sum_{i=1}^n x_i y_i
+    \end{equation}
+    
+    \item For $n \geq 2$ and $x_i \neq x_j$, $\forall 1\leq i \neq j \leq n$, the Hessian is given by:
+    \begin{equation}
+        H_L(w_0, w_1) = 
+        \begin{pmatrix}
+            \frac{\partial^2 L}{\partial w_0^2} & \frac{\partial^2 L}{\partial w_0 \partial w_1} \\ 
+            \frac{\partial^2 L}{\partial w_0 \partial w_1} & \frac{\partial^2 L}{\partial w_1^2}
+        \end{pmatrix} = 
+        \begin{pmatrix}
+            1 & \frac{1}{n}\sum_{i=1}^n x_i \\ 
+            \frac{1}{n}\sum_{i=1}^n x_i & \frac{1}{n} \sum_{i=1}^n x_i^2
+        \end{pmatrix}
+    \end{equation}
+    Since $\overline{x^2} - \bar{x}^2 = \frac{1}{n}\sum x_i^2 - (\frac{1}{n}\sum x_i)^2 > 0$ (using $x_i \neq x_j, i\neq j$), we have ${\rm det}(H_L) > 0$. And since the diagonal elements are positive, one can assert that $H_L \succ 0$. Therefore, the least squares function is convex with respect to $\mathbf{w} = (w_0, w_1)$. $\square$
+    
+    \item For a strictly convex function, first order optimality condition suffices to guarantee the global minimum. The gradient:
+    \begin{equation}
+        \nabla L(w_0, w_1) = \begin{pmatrix}
+            \frac{\partial L}{\partial w_0} \\ \frac{\partial L}{\partial w_1}
+        \end{pmatrix} = 
+        \begin{pmatrix}
+            -\frac{1}{n}\sum_{i=1}^n(y_i - w_0 - w_1 x_i) \\ 
+            -\frac{1}{n}\sum_{i=1}^n x_i(y_i - w_0 - w_1x_i)
+        \end{pmatrix} = 
+        \begin{pmatrix}
+            w_0 + \overline{x} w_1 - \overline{y} \\ 
+            \overline{x} w_0 + \overline{x^2} w_1 - \overline{xy}
+        \end{pmatrix}
+    \end{equation}
+    
+    \item The optimal parameters are then given by solving:
+    \begin{equation}
+        \begin{aligned}
+            w_0 + \left(\frac{1}{n}\sum_{i=1}^n x_i\right) w_1 &= \frac{1}{n}\sum_{i=1}^n y_i \\ 
+            \left(\frac{1}{n}\sum_{i=1}^n x_i\right) w_0 + \left(\frac{1}{n}\sum_{i=1}^n x_i^2\right) w_1 &= \frac{1}{n}\sum_{i=1}^n x_iy_i
+        \end{aligned}
+    \end{equation}
+    The solution yields:
+    \begin{equation}
+        \left\{\begin{aligned}
+            w_0 &= \frac{\left(\frac{1}{n}\sum x_i^2\right)\left(\frac{1}{n}\sum y_i\right) - \left(\frac{1}{n}\sum x_i\right)\left(\frac{1}{n}\sum x_iy_i\right)}{\left(\frac{1}{n}\sum x_i^2\right) - \left(\frac{1}{n}\sum x_i\right)^2} = \frac{\overline{x^2}\overline{y} - \overline{x}\,\overline{xy}}{\overline{x^2} - \overline{x}^2}\\
+            w_1 &= \frac{\frac{1}{n}\sum x_iy_i - \left(\frac{1}{n}\sum x_i\right)\left(\frac{1}{n}\sum y_i\right)}{\left(\frac{1}{n}\sum x_i^2\right) - \left(\frac{1}{n}\sum x_i\right)^2} = \frac{\overline{xy} - \overline{x}\,\overline{y}}{\overline{x^2} - \overline{x}^2}
+        \end{aligned}\right.
+    \end{equation}
+    
+\end{enumerate}
+
+This formulation can be easily extended to multi-dimensional variable space by converting the coefficients to matrices, where a linear least squares with intercept is formulated as follows:
+\begin{equation}
+    L = \frac{1}{2n}\left\| \mathbf{y} - \bm{\Phi} \mathbf{w} \right\|^2,\qquad \bm{\Phi} = 
+    \begin{pmatrix}
+        1 & x_{11} & \cdots & x_{1d} \\ 
+        1 & x_{21} & \cdots & x_{2d} \\ 
+        \vdots & \vdots & & \vdots \\
+        1 & x_{n1} & \cdots & x_{nd}
+    \end{pmatrix}
+\end{equation}
+where $x_{ij}$ denotes the $j$-th variable of the $i$-th data point.
+\begin{enumerate}[resume*]
+    \item $\bm{\Phi}^T\bm{\Phi}$ is invertible, if and only if $\bm{\Phi}$ is full column rank, i.e. ${\rm rank}(\bm{\Phi}) = d+1$.
+    
+    \item Given $\bm{\Phi}^T \bm{\Phi}$ is invertible, one can immediately conclude that the Hessian is positive definite, and the objective function (loss function) is strictly convex. In this case the solution to the first-order optimality condition yields the global minimum:
+    \begin{equation}
+        \nabla L = \frac{1}{n}\left(\bm{\Phi}^T \bm{\Phi} \mathbf{w} - \bm{\Phi}^T \mathbf{y}\right) = 0\quad \Longrightarrow\quad \mathbf{w} = \left(\bm{\Phi}^T \bm{\Phi}\right)^{-1}\bm{\Phi}^T \mathbf{y}
+    \end{equation}
+    
+    \item If $n < d+1$, then ${\rm rank}(\bm{\Phi}) \leq n < d+1$ and $\bm{\Phi}^T \bm{\Phi}$ and must contain zero eigenvalue. Consider the non-trivial space formed by eigenvectors of $\bm{\Phi}^T \bm{\Phi}$ corresponding to trivial eigenvalues, equivalently the nullspace of $\bm{\Phi}^T \bm{\Phi}$. Assuming $\mathbf{w}_0$ satisfies the first-order optimality condition, we have
+    \begin{equation}
+        \bm{\Phi}^T \bm{\Phi}(\mathbf{w}_1) = \bm{\Phi}^T \bm{\Phi}(\mathbf{w}_0 + \mathbf{w}') = \bm{\Phi}^T \bm{\Phi} \mathbf{w}_0 + \bm{\Phi}^T \bm{\Phi} \mathbf{w}' = \bm{\Phi}^T \bm{\Phi} \mathbf{w}_0 + \mathbf{0} = \bm{\Phi}^T \mathbf{y},\qquad \forall \mathbf{w}' \in {\rm ker}(\bm{\Phi}^T \bm{\Phi})
+    \end{equation}
+    so $\mathbf{w}_1 = \mathbf{w}_0 + \mathbf{w}'$ also satisfies the optimality condition. However, as $\bm{\Phi}^T \bm{\Phi} \succeq 0$, the function is still convex, and any point fulfilling the first-order optimality is a global minimum. Therefore, there are infinitely many global minima for function $L$.
+    
+\end{enumerate}
+
+Consider using the gradient descent scheme on linear least squares:
+\begin{equation}
+    \mathbf{w}^{t+1} = \mathbf{w}^t - \eta \nabla L(\mathbf{w}),\qquad \left\| \mathbf{w}^{t+1} - \mathbf{w}^*\right\|_2 \leq \left\| \mathbf{I} - \eta \bm{\Phi}^T \bm{\Phi} \right\|_{op} \left\| \mathbf{w}^t - \mathbf{w}^* \right\|_2
+\end{equation}
+\begin{enumerate}[resume*]
+    \item Assuming the stepsize $\eta$ is such that $\left\| \mathbf{I} - \eta \bm{\Phi}^T \bm{\Phi} \right\|_{op} < 1$. A total number of 
+    \begin{equation}
+        \tau = \left\lceil \log_{\left\| \mathbf{I} - \eta \bm{\Phi}^T \bm{\Phi} \right\|_{op}}\frac{\varepsilon}{\left\|\mathbf{w}^0 - \mathbf{w}^*\right\|_2} \right\rceil = \left\lceil \frac{\ln \varepsilon - \ln \left\| \mathbf{w}^0 - \mathbf{w}^* \right\|_2 }{\ln \left\| \mathbf{I} - \eta \bm{\Phi}^T \bm{\Phi} \right\|_{op}} \right\rceil
+    \end{equation}
+    is needed to guarantee that the solution is within the $\varepsilon$-neighbourhood of the ground truth.
+    
+    \item Let $\lambda_{max}$ and $\lambda_{min}$ be the maximum and minimum eigenvalues of $\bm{\Phi}^T \bm{\Phi}$. Then the spectrum of $\mathbf{I} - \eta \bm{\Phi}^T \Phi$ is bounded by $1 - \eta \lambda_{max}$ and $1 - \eta \lambda_{min}$, and $\left\| \mathbf{I} - \eta \bm{\Phi}^T \bm{\Phi} \right\|_{op} = \max\{|1 - \eta \lambda_{max}|, |1 - \eta \lambda_{min}|\}$.
+    
+    To minimize this convergence rate, one can consider $\eta$ as the independent variable and the convergence rate $p = \left\| \mathbf{I} - \eta \bm{\Phi}^T \bm{\Phi} \right\|_{op}$ as a function of it. Assuming $\lambda_{max} \geq \lambda_{min} > 0$ so that a unique $\mathbf{w}^*$ exists, the optimal stepsize can be determined via $1 - \eta \lambda_{min} = \eta \lambda_{max} - 1$:
+    \begin{equation}
+         \eta^* = \frac{2}{\lambda_{max} + \lambda_{min}},\quad p^* = \frac{\lambda_{max} - \lambda_{min}}{\lambda_{max} + \lambda_{min}} = \frac{\left(\lambda_{max}/\lambda_{min}\right) - 1}{\left(\lambda_{max}/\lambda_{min}\right) + 1} = \frac{{\rm cond}(\bm{\Phi}^T \bm{\Phi}) - 1}{{\rm cond}(\bm{\Phi}^T \bm{\Phi}) + 1}
+    \end{equation}
+    In particular, when $\lambda_{max} = \lambda_{min} = \lambda$, in other words the loss function is basically isotropic, one will arrive at:
+    \begin{equation}
+        \eta^* = \frac{1}{\lambda}, \qquad p^* = 0
+    \end{equation}
+    meaning that with this optimal step size, the algorithm reaches the global minimum in one iteration. This is nothing surprising, for the negative gradients of such isotropic loss function always point exactly towards the global minimum.
+    
+    \item In closed form, the least squares can be solved by solving the normal equation once. Evaluating the matrix and vector requires $\approx nd^2$ multiplications and additions. In the case of full-column-rank $\bm{\Phi}$ and so strictly convex loss function with moderate dimensions of variables, the system can be best solved by direct solvers such as Cholesky factorization. In all, this requires around $\frac{1}{6}d^3 + nd^2$ multiplications and additions.
+    
+    Using steepest descent method, however, at each iteration the evaluation of the gradient requires around $3nd$ multiplications and additions, and the total expense would be around $3 \tau n d$. Use the explicit expression for $\tau$, the expense can be rewritten as:
+    \begin{equation}
+        3\tau nd \approx \frac{\ln \frac{\left\| \mathbf{w}^0 - \mathbf{w}^* \right\|}{\varepsilon}}{\ln \frac{{\rm cond(\bm{\Phi}^T \bm{\Phi}) + 1}}{cond(\bm{\Phi}^T \bm{\Phi}) - 1}} 3nd
+    \end{equation}
+    Hence the complexity depends on the convergence threshold, the initial estimate, and the conditioning of the Hessian. In particular, denoting $s = \ln [\left\| \mathbf{w}^0 - \mathbf{w}^* \right\|/\varepsilon]$ as some parameter determined by initial guess and convergence threshold, when we consider relatively large condition numbers, it can be approximated as:
+    \begin{equation}
+        3\tau nd \approx \frac{3}{2}{\rm cond}(\bm{\Phi}^T \bm{\Phi}) s n d
+    \end{equation}
+    Since $n> d$, the complexity for direct solving normal equation is mostly dominated by $nd^2$. Therefore, when ${\rm cond}(\bm{\Phi}^T \bm{\Phi}) > d/s$, gradient descent may be more expensive than solving normal equation; otherwise gradient descent may be more favourable.
+    
+    \item See the code below.
+    \item See the code below.
+    \lstinputlisting[language=python]{EX01.py}
+\end{enumerate}
+
+\section{Gradient descent}
+The loss function is defined by:
+\begin{equation}
+    L(\mathbf{w}) = \frac{1}{2}\left\| \mathbf{X}\mathbf{w} - \mathbf{y} \right\|_2^2
+\end{equation}
+The gradient descent scheme:
+\begin{equation}
+    \mathbf{w}^{k+1} = \mathbf{w}^k - \eta \nabla L(\mathbf{w}^k)
+\end{equation}
+
+\begin{enumerate}[label=(\alph*)]
+    \item Plug in the expression for $L$,
+    \begin{equation}
+        \nabla L (\mathbf{w}^k) = \mathbf{X}^T \mathbf{X} \mathbf{w}^k - \mathbf{X}^T \mathbf{y},\qquad 
+        \mathbf{w}^{k+1} = \left(\mathbf{I} - \eta \mathbf{X}^T \mathbf{X}\right) \mathbf{w}^k + \eta \mathbf{X}^T \mathbf{y}
+    \end{equation}
+    
+    \item Assuming at certain $k$, $\mathbf{w}^k$ satisfies:
+    \begin{equation}
+        \mathbf{w}^k = \left(\mathbf{I} - \eta \mathbf{X}^T \mathbf{X}\right)^k \mathbf{w}^0 + \eta \left(\sum_{j=0}^{k-1} \left(\mathbf{I} - \eta \mathbf{X}^T \mathbf{X}\right)^j \right) \mathbf{X}^T \mathbf{y}
+    \end{equation}
+    Then at the ()$k+1$)-th iteration, the updated estimate can be written as:
+    \begin{equation}
+        \begin{aligned}
+            \mathbf{w}^{k+1} &= \left(\mathbf{I} - \eta \mathbf{X}^T \mathbf{X}\right) \mathbf{w}^k + \eta \mathbf{X}^T \mathbf{y} \\ 
+            &= \left(\mathbf{I} - \eta \mathbf{X}^T \mathbf{X}\right) \left[\left(\mathbf{I} - \eta \mathbf{X}^T \mathbf{X}\right)^k \mathbf{w}^0 + \eta \sum_{j=0}^{k-1} \left(\mathbf{I} - \eta \mathbf{X}^T \mathbf{X}\right)^j  \mathbf{X}^T \mathbf{y}\right] + \eta \mathbf{X}^T \mathbf{y} \\ 
+            &= \left(\mathbf{I} - \eta \mathbf{X}^T \mathbf{X}\right)^{k+1} \mathbf{w}^0 + \eta \sum_{j=1}^{k} \left(\mathbf{I} - \eta \mathbf{X}^T \mathbf{X}\right)^j \mathbf{X}^T \mathbf{y} + \eta \mathbf{X}^T \mathbf{y} \\ 
+            &= \left(\mathbf{I} - \eta \mathbf{X}^T \mathbf{X}\right)^{k+1} \mathbf{w}^0 + \eta \left[1 + \sum_{j=1}^{k} \left(\mathbf{I} - \eta \mathbf{X}^T \mathbf{X}\right)^j \right] \mathbf{X}^T \mathbf{y} \\ 
+            &= \left(\mathbf{I} - \eta \mathbf{X}^T \mathbf{X}\right)^{k+1} \mathbf{w}^0 + \eta \sum_{j=0}^{k} \left(\mathbf{I} - \eta \mathbf{X}^T \mathbf{X}\right)^j \mathbf{X}^T \mathbf{y} \\ 
+        \end{aligned}
+    \end{equation}
+    also satisfying the same relation. Now that $\mathbf{w}^1 = \left(\mathbf{I} - \eta \mathbf{X}^T \mathbf{X}\right)^1 \mathbf{w}^0 + \eta \sum_{j=0}^0 \left(\mathbf{I} - \eta \mathbf{X}^T \mathbf{X}\right)^j \mathbf{X}^T \mathbf{y}$ satisfies the relation, using mathematical induction, one can conclude:
+    \begin{equation}
+        \mathbf{w}^k = \left(\mathbf{I} - \eta \mathbf{X}^T \mathbf{X}\right)^k \mathbf{w}^0 + \eta \sum_{j=0}^{k-1} \left(\mathbf{I} - \eta \mathbf{X}^T \mathbf{X}\right)^j \mathbf{X}^T \mathbf{y}, \qquad \forall k \in \mathbb{Z}^+
+    \end{equation}
+    
+    \item The eigenvalues of $\mathbf{X}^T \mathbf{X}$ can be constructed via the SVD of $\mathbf{X}$:
+    \begin{equation}
+        \mathbf{X}^T \mathbf{X} = \left(\mathbf{U} \bm{\Sigma} \mathbf{V}^T\right)^T \left(\mathbf{U} \bm{\Sigma} \mathbf{V}^T\right) = \mathbf{V} \bm{\Sigma}^T \mathbf{U}^T \mathbf{U} \bm{\Sigma} \mathbf{V}^T = \mathbf{V} \bm{\Sigma}^T \bm{\Sigma} \mathbf{V}^T = \mathbf{V} \bm{\Lambda} \mathbf{V}^T
+    \end{equation}
+    where $\Lambda_{ij} = \sigma_i^2 \delta_{ij}$. Therefore:
+    \begin{equation}
+        \mathbf{I} - \eta \mathbf{X}^T \mathbf{X} = \mathbf{V}\mathbf{V}^T - \eta \mathbf{V} \bm{\Lambda} \mathbf{V}^T = \mathbf{V}\left(\mathbf{I} - \eta \bm{\Lambda}\right) \mathbf{V}^T
+    \end{equation}
+    
+    \item No question.
+    \item Using the eigenvalue formulation, the power of a matrix can be easily computed:
+    \begin{equation}
+        \left(\mathbf{I} - \eta \mathbf{X}^T \mathbf{X}\right)^k = \left(\mathbf{V}(\mathbf{I} - \eta \bm{\Lambda})\mathbf{V}^T\right)^k = \mathbf{V} (\mathbf{I} - \eta \bm{\Lambda})^k \mathbf{V}^T
+    \end{equation}
+    
+    \item If $\mathbf{v}^i$ is an eigenvector of $\mathbf{X}^T \mathbf{X}$ corresponding to eigenvalue $\sigma_i^2$, we have
+    \begin{equation}
+        \left(\mathbf{I} - \eta \mathbf{X}^T \mathbf{X}\right)^k \mathbf{v}^i = \mathbf{V} \left(\mathbf{I} - \eta \bm{\Lambda}\right)^k \mathbf{V}^T \mathbf{v}^i = \mathbf{V}\left(\mathbf{I} - \eta \bm{\Lambda}\right)^k \mathbf{e}_i = (1 - \eta \sigma_i^2)^{k} \mathbf{v}^i
+    \end{equation}
+    If $\sigma_i > 0$, $\left(\mathbf{I} - \eta \mathbf{X}^T \mathbf{X}\right)^k \mathbf{v}^i = (1 - \eta \sigma_i^2)^{k} \mathbf{v}^i \rightarrow \mathbf{0}$ ($k \rightarrow +\infty$);
+    
+    If $\sigma_i = 0$, $\left(\mathbf{I} - \eta \mathbf{X}^T \mathbf{X}\right)^k \mathbf{v}^i = (1 - \eta \sigma_i^2)^{k} \mathbf{v}^i \equiv \mathbf{v}^i$.
+    
+    \item Therefore the first term virtually extracts the part of $\mathbf{w}^0$ that is inside the nullspace of $\mathbf{X}^T$. It can also be interpreted as $\mathbf{w}^0$ being squeezed onto the orthogonal complement of $\mathbf{X}^+$ each iteration.
+    \item Similarly, utilizing the eigenvalue decomposition:
+    \begin{equation}
+        \eta \sum_{j=0}^{k-1}(\mathbf{I} - \eta \mathbf{X}^T \mathbf{X})^j \mathbf{X}^T \mathbf{y} = \eta \mathbf{V} \sum_{j=0}^{k-1}\left(\mathbf{I} - \eta \bm{\Lambda}\right)^j \bm{\Sigma}^T \mathbf{U}^T \mathbf{y}
+    \end{equation}
+    
+    \item First we compute the middle part, i.e. the matrix series. Diagonality is preserved during matrix multiplications and summations, and the i-th diagonal component of the resulting matrix:
+    \begin{equation}
+        \begin{aligned}
+            \left(\sum_{j=0}^{k=1}\left(\mathbf{I} - \eta \bm{\Lambda}\right)^j\right)_{ii} &= \sum_{j=0}^{k-1} (1- \eta \sigma_i^2)^j \rightarrow \frac{1}{\eta \sigma_i^2}\qquad k\rightarrow \infty\qquad (\sigma_i\neq 0) \\ 
+            \left(\sum_{j=0}^{k=1}\left(\mathbf{I} - \eta \bm{\Lambda}\right)^j \bm{\Sigma}^T\right)_{ii} &= \sigma_i \sum_{j=0}^{k-1} (1- \eta \sigma_i^2)^j \rightarrow \frac{1}{\eta \sigma_i}\qquad k\rightarrow \infty\qquad (\sigma_i\neq 0)
+        \end{aligned}
+    \end{equation}
+    
+    In principle, those diagonal elements corresponding to nullspace will diverge when $k\rightarrow \infty$. However, as they are multiplied by $\bm{\Sigma}^T$, whose respective diagonal elements are zero, they will effectively not contribute to the entire product:
+    \begin{equation}
+        \left(\sum_{j=0}^{k=1}\left(\mathbf{I} - \eta \bm{\Lambda}\right)^j \bm{\Sigma}^T\right)_{ii} = \sigma_i \sum_{j=0}^{k-1} (1- \eta \sigma_i^2)^j \equiv 0 \qquad (\sigma_i = 0)
+    \end{equation}
+    Denote $\bm{\Sigma}^+ \in \mathbb{R}^{d\times n}$ as the inverse of $\bm{\Sigma}$ with truncated singular values, i.e. 
+    \begin{equation}
+        \bm{\Sigma}^+ = \sigma_i^+ \delta_{ij},\qquad \sigma_i^+ = \left\{\begin{aligned}
+            \sigma_i^{-1}&\quad (\sigma_i\neq 0) \\ 
+            0&\quad (\sigma_i = 0)
+        \end{aligned}
+        \right.
+    \end{equation}
+    The 2nd term can be reiterated as:
+    \begin{equation}
+        \eta \mathbf{V} \sum_{j=0}^{k-1} \left(\mathbf{I} - \eta \bm{\Lambda}\right)^j \bm{\Sigma}^T \mathbf{U}^T \mathbf{y} = \eta \mathbf{V} \frac{1}{\eta} \bm{\Sigma}^+ \mathbf{U}^T \mathbf{y} = \mathbf{V} \bm{\Sigma}^+ \mathbf{U}^T \mathbf{y}
+    \end{equation}
+    Similarly one can see if we split $\mathbf{y}$ into ${\rm ker}(\mathbf{X}^T)$ and ${\rm ker}(\mathbf{X}^T)^\perp$ parts, those inside the nullspace will get squeezed to zero, and those outside the nullspace will be scaled by inverse of the singular value.
+    
+    \item We see that $\mathbf{X}^- = \mathbf{V} \bm{\Sigma}^+ \mathbf{U}^T$ has the following properties:
+    \begin{equation}
+        \begin{aligned}
+            & \mathbf{X}^- \mathbf{X} \mathbf{X}^- = \mathbf{V} \bm{\Sigma}^+ \bm{\Sigma} \bm{\Sigma}^+ \mathbf{U}^T = \mathbf{V} \bm{\Sigma}^+ \mathbf{U}^T = \mathbf{X}^- \\ 
+            & \mathbf{X} \mathbf{X}^- \mathbf{X} = \mathbf{U} \bm{\Sigma} \bm{\Sigma}^+ \bm{\Sigma} \mathbf{V}^T = \mathbf{U} \bm{\Sigma} \mathbf{V}^T = \mathbf{X} \\ 
+            & \left(\mathbf{X}\mathbf{X}^-\right)^T = \left(\mathbf{U} \bm{\Sigma}\bm{\Sigma}^+ \mathbf{U}^T\right)^T = \mathbf{U} \bm{\Sigma}\bm{\Sigma}^+ \mathbf{U}^T = \mathbf{X} \mathbf{X}^- \\ 
+            & \left(\mathbf{X}^-\mathbf{X}\right)^T = \left(\mathbf{V} \bm{\Sigma}^+ \bm{\Sigma} \mathbf{V}^T\right)^T = \mathbf{V} \bm{\Sigma}^+ \bm{\Sigma} \mathbf{V}^T = \mathbf{X}^- \mathbf{X} \\ 
+        \end{aligned}
+    \end{equation}
+    Therefore $\mathbf{X}^+ = \mathbf{X}^- = \mathbf{V} \bm{\Sigma}^+ \mathbf{U}^T$ is the Moore-Penrose inverse of $\mathbf{X}$, and the estimate at the $k$-th iteration:
+    \begin{equation}
+        \begin{aligned}
+            \mathbf{w}^k &\rightarrow \mathbf{V}\begin{pmatrix} \mathbf{0}_r & \mathbf{0} \\ \mathbf{0} & \mathbf{I}_{d-r} \end{pmatrix} \mathbf{V}^T \mathbf{w}^0 + \mathbf{X}^+ \mathbf{y} \\ 
+            &= \left(\mathbf{I} - \mathbf{X}^+ \mathbf{X}\right) \mathbf{w}^0 + \mathbf{X}^+ \mathbf{y} = \mathbf{w}^0 + \mathbf{X}^+ \left(\mathbf{y} - \mathbf{X} \mathbf{w}^0\right) \qquad (k\rightarrow +\infty)            
+        \end{aligned}
+    \end{equation}
+    where $r$ denotes the rank of $\mathbf{X}^T \mathbf{X}$.
+    
+    \item For under-parameterized (equiv. over-determined) setting, $r=d$. In this case ${\rm dim}\, {\rm ker}(\mathbf{X}) = 0$, and $\mathbf{w}^k \rightarrow \mathbf{X}^+ \mathbf{y}$ ($k\rightarrow +\infty$) regardless of choice of $\mathbf{w}^0$.
+\end{enumerate}
+
+
+\end{document}
+
