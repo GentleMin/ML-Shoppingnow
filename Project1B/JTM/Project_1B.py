@@ -40,7 +40,11 @@ print("Reg choice: {}".format(alpha_chosen))
 print("Condition:  {}".format(np.linalg.cond(Phi.T @ Phi + alpha_chosen * np.identity(Phi.shape[1]))))
 print(predictor.coef_)
 
-"""2. Optional: visualize residual, and decide whether to use outlier-robust method"""
+"""2. Optional: visualize residual, and decide whether to use outlier-robust method
+A posteriori results show that using a robust predictor (Huber) the score is lower.
+However judging from the histogram the outliers are not very spurious, therefore using a 
+robust regression is not fully justified.
+"""
 sns.histplot(y - predictor.predict(Phi))
 plt.show()
 
