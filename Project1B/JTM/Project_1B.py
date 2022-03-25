@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+"""
+Project 1B
+Introduction to Machine Learning @ ETH Zurich, FS 2022
+Group SHOPPINGNOW
+"""
+
 import numpy as np
 import pandas as pd
 from sklearn.linear_model import RidgeCV, LassoCV, HuberRegressor
@@ -28,7 +35,13 @@ Phi = np.concatenate([map_to_feature(X, feature_map_list[i], feature_len_list[i]
 
 print("Condition number without regularization: {}".format(np.linalg.cond(Phi.T @ Phi)))
 
+"""For this specific problem, the condition number is very large.
+In this sense, classical regressor might be susceptible to instability and ill-conditioning.
+We therefore use regularized regression, and test regularization param via cross-validation.
+"""
+
 # cross-validate regularization strength
+"""A posteriori results show Ridge/Tikhonov performs slightly better than Lasso"""
 alphas = np.logspace(-1, 2, num=31)
 predictor = RidgeCV(alphas=alphas, cv=10, fit_intercept=False).fit(Phi, y)
 rms_err = np.sqrt(np.mean((y - predictor.predict(Phi))**2))
@@ -45,6 +58,7 @@ A posteriori results show that using a robust predictor (Huber) the score is low
 However judging from the histogram the outliers are not very spurious, therefore using a 
 robust regression is not fully justified.
 """
+
 sns.histplot(y - predictor.predict(Phi))
 plt.show()
 
