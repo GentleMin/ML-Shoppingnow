@@ -53,10 +53,10 @@ for i in range(n_test):
         alpha_idx = np.argmin(rms_temp)
         alpha_choices[i_split] = alphas[alpha_idx]
         print("Reg choice:", alphas[alpha_idx])
-        predictor = Ridge(alpha=alpha, fit_intercept=False).fit(Phi, y)
+        predictor = Ridge(alpha=alpha, fit_intercept=False).fit(Phi[train_idx, :], y[train_idx])
         model_est[i*n_split + i_split, :] = predictor.coef_
 
 model_ave = np.mean(model_est, axis=0)
 print(model_ave)
 
-pd.DataFrame(data=model_ave).to_csv("./results_model-mean-complete.csv", header=False, index=False)
+pd.DataFrame(data=model_ave).to_csv("./results_model-mean.csv", header=False, index=False)

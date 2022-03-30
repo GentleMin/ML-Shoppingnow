@@ -1,0 +1,7 @@
+The recipe for this task is as follows:
+1) The training set is splitted randomly into k=10 subsets;
+2) For each training/validation split, Ridge regressions with 5 different regularizations (0.1, 1, 10, 100, 200) are tested;
+3) The RMSE values are registered for each combination of validation set and regularization;
+4) The RMSE values of each regularization are averaged over all splits. This results averaged RMSE values of 5 regularizations.
+5) Procedures 1-4 are repeated 100 times; the RMSE values are averaged over these 100 rounds.
+
