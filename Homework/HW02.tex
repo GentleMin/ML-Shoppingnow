@@ -233,16 +233,65 @@ The set of all subgradients at $\mathbf{x}$ is denoted by $\partial f(\mathbf{x}
 
 \subsection{Cross-validation}
 \begin{enumerate}[label=(\alph*)]
-    \item 
+    \item False. The aim of Leave-One-Out Cross Validation (LOOCV) is to evaluate the performance of a machine learning algorithm, in particular the robustness of certain hyperparameters. It is in general not used to estimate generalization error of a prediction model (esp. the model generated at last will be trained on a different dataset than those evaluated within LOOCV).
+    \item False. Same reason above, but more apparent, since training error is not even relevant in LOOCV.
+    \item True. For a deterministic learning algorithm (i.e. no randomness involved), LOOCV always yields the same result, as the training-testing split is exhaustive and therefore exactly the same at each run.
 \end{enumerate}
 
 \subsection{Akaike Information Criterion}
+The Akaike Information Criteria $\annot{AIC} = 2k - 2\ln \hat{L}$, where $\hat{L}$ is the likelihood of $f$ on $D_{\annot{train}}$, $k$ is a measure of the number of parameters used to fit $f$.
+\begin{enumerate}[label=(\alph*)]
+    \item False. Seems irrelevant, although models with low generalization error probably (and ideally) have low $\annot{AIC}$ scores.
+    \item False. $2k$ term in $\annot{AIC}$ can be viewed as a proxy of model complexity, thus penalizing overly-complex models for data fitting.
+\end{enumerate}
 
 \subsection{Regularization}
+\begin{enumerate}[label=(\alph*)]
+    \item Right. Regularization term in Ridge regression has concentric hyperspheres as its contours.
+    \item Left. Regularization term in Lasso regression has `hyper-diamonds' as its contours.
+\end{enumerate}
 
 \clearpage
 
 \section{Support Vector Machine (SVM)}
+\begin{enumerate}[label=(\alph*)]
+    \item For this simple dataset it is apparent that the boundary should be somewhere between B and C. The hyperplane (=straight line in this context) that maximizes the margin is the perpendicular bisector of the segment BC. Therefore its equation:
+    \begin{equation}
+        \begin{aligned}
+            (x_\annot{B} - x_\annot{C})\left(x - \frac{x_\annot{B} + x_\annot{C}}{2}\right) + (y_\annot{B} - y_\annot{C})\left(y - \frac{y_\annot{B} + y_\annot{C}}{2}\right) &= 0 \\
+            (x_\annot{B} - x_\annot{C})x + (y_\annot{B} - y_\annot{C})y - \frac{1}{2}\left(x_\annot{B}^2 + y_\annot{B}^2 - x_\annot{C}^2 - y_\annot{C}^2\right) &= 0 \\
+            - x + y - \frac{1}{2}(4 + 6.25 - 9 - 2.25) = -x + y + \frac{1}{2} &= 0
+        \end{aligned}
+    \end{equation}
+    
+    \item Now the margin is really just given by support vectors B and C. Therefore, 
+    \begin{equation}
+        \annot{margin} = \frac{-x_\annot{B} + y_\annot{B} + 1/2}{\sqrt{(-1)^2 + 1^2}} = \frac{-x_\annot{C} + y_\annot{C} + 1/2}{\sqrt{(-1)^2 + 1^2}} = \frac{1}{\sqrt{2}} \approx 0.707
+    \end{equation}
+    
+    \item Graphical illustration.
+    \item The objective of maximum margin classifier:
+    \begin{equation}
+        \begin{aligned}
+            \hat{\mathbf{w}} &= \arg\max_{\mathbf{w}} \left\{ \frac{\min_i \left\{ y_i \langle \mathbf{w}, \mathbf{x}_i \rangle \right\}} {\left\|\mathbf{w}\right\|} \right\}
+            = \arg \max_{\mathbf{w}} \left\{ \frac{\annot{margin}(\mathbf{w})}{\left\|\mathbf{w}\right\|} \right\} \\ 
+            &= \arg \max_{\mathbf{w}} \left\{ \left(\frac{\left\|\mathbf{w}\right\|}{\annot{margin}(\mathbf{w})}\right)^{-1} \right\} = \arg \min_{\mathbf{w}} \left\{ \frac{\left\|\mathbf{w}\right\|}{\annot{margin}(\mathbf{w})} \right\}
+        \end{aligned}
+    \end{equation}
+    Note that this formulation only constrains the direction of $\mathbf{w}$. Any scaler factor multiplied with $\mathbf{w}$ does not change the minimizer. Therefore we can constrain the modulus of $\mathbf{w}$ so that $\annot{margin}(\mathbf{w}) \equiv 1$, or equivalently $\mathbf{w} := \mathbf{w}/\annot{margin}(\mathbf{w})$. Under this constraint:
+    \begin{equation}
+        \begin{array}{rll}\displaystyle
+            \hat{\mathbf{w}} &= \arg \min_{\mathbf{w}} \left\{ \left\| \mathbf{w} \right\| \right\}\qquad & \annot{s.t.}\quad \annot{margin}(\mathbf{w}) = 1\\
+            &= \arg \min_{\mathbf{w}} \left\{ \frac{1}{2} \left\| \mathbf{w} \right\|^2 \right\}\qquad &\annot{s.t.}\quad y_i \langle \mathbf{x}_i, \mathbf{w} \rangle \geq 1\quad \forall i=1\cdots N
+        \end{array}
+    \end{equation}
+    
+    In this context, we'll naturally have normalized margin
+    \begin{equation}
+        \widehat{\annot{margin}}(\hat{\mathbf{w}}) = \bigg| \left\langle \mathbf{x}_\annot{sv}, \frac{\hat{\mathbf{w}}}{\left\|\hat{\mathbf{w}}\right\|} \right\rangle \bigg| = \frac{\annot{margin}(\hat{\mathbf{w}})}{\left\| \hat{\mathbf{w}} \right\|} = \frac{1}{\left\| \hat{\mathbf{w}} \right\|}
+    \end{equation}
+    
+\end{enumerate}
 
 \end{document}
 
