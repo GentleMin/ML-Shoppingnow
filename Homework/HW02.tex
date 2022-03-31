@@ -1,0 +1,248 @@
+\documentclass[a4paper, 10pt]{article}
+\usepackage[utf8]{inputenc}
+
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{mathrsfs}
+% \usepackage{mathabx}
+
+\usepackage{geometry}
+\geometry{left=2.0cm, right=2.0cm, top=2cm, bottom=2.5cm}
+\usepackage{parskip}
+
+\usepackage{bm}
+\usepackage{enumitem}
+\usepackage{caption}
+\usepackage{booktabs}
+
+\newcommand{\annot}[1]{{\rm #1}}
+
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    citecolor=blue,
+    urlcolor=cyan,
+}
+
+% \renewcommand{\baselinestretch}{1.2}
+
+\usepackage{listings}
+\usepackage{xcolor}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{stdcodestyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\small,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=stdcodestyle}
+
+\title{\bfseries Introduction to Machine Learning \\ Answers to Exercise 2 - Classification \& Overfitting}
+\author{Jingtao Min}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{True-False Classification with Asymmetric Losses}
+
+The numbers of true/false negatives/positives are as follows:
+\begin{table}[htbp]
+    \centering
+    \caption{Classification result distribution for classifier A, B}
+    \label{tab:class-results}
+    
+    \begin{tabular}{lll}
+        \toprule
+        & $y=-1$ & $y=+1$ \\ 
+        \midrule
+        $\hat{y}=-1$ & $\annot{TN} = 4$ & $\annot{FN} = 2$\\
+        $\hat{y}=+1$ & $\annot{FP} = 2$ & $\annot{TP} = 3$ \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{enumerate}[label=(\alph*)]
+    \item False Positive Rate (FPR) of classifier $A$.
+    \item False Discovery Rate (FDR) of classifier $A$.
+    \item Precision of classifier $A$.
+    \item Recall of classifier $A$.
+    
+    \begin{equation}
+        \begin{aligned}
+            \annot{FPR} \, &\sim P(\hat{y}=+1|y=-1) = \frac{\annot{FP}}{\annot{FP + TN}} = 1/3 \\
+            \annot{FDR} \, &\sim P(y=-1|\hat{y}=+1) = \frac{\annot{FP}}{\annot{FP + TP}} = 2/5\\
+            \annot{Precision} \, &\sim P(y=+1|\hat{y}=+1) = \frac{\annot{TP}}{\annot{TP + FP}} = 3/5\\
+            \annot{Recall} \, &\sim P(\hat{y}=+1|y=+1) = \frac{\annot{TP}}{\annot{TP + FN}} = 3/5\\
+        \end{aligned}
+    \end{equation}
+    
+    \item F1-score is the harmonic average of precision and mean:
+    \begin{equation}
+        \annot{F1} = \frac{2}{5/3 + 5/3} = \frac{3}{5}
+    \end{equation}
+    
+    \item 
+    \begin{itemize}
+        \item F1-score basically yield equal weight to recall and precision, and is not the silver-bullet for evaluating classifiers. For instance, when false positive is much more serious than false negative, one may want to evaluate these two errors asymmetrically. In these cases precision is far more important than recall.
+        \item On the contrary. Since the dataset is not linearly separable (and A does not linearly separate the positive and negative results), it can only be achieved by using soft-margin SVM.
+        \item Seems true, if we assume `adversarial perturbations' refer to small perturbations in the feature space. $A$ is more robust because the correctly classified points are all distant from the boundary.
+    \end{itemize}
+    
+    \item $\hat{f}$ for E may be independent of $y$, because it may be a random classifier.
+    \item $\{C,D\}$ may contain the optimal classifier.
+\end{enumerate}
+
+\section{Ridge Regression}
+
+The loss function for Ridge regression:
+\begin{equation}
+    \arg\min_{\mathbf{w}}L_{\annot{Ridge}}(\mathbf{w}) = \arg\min_{\mathbf{w}} \left[\sum_{i=1}^n \left(y_i - \mathbf{w}^T \mathbf{x}_i\right)^2 + \lambda \left\|\mathbf{w}\right\|^2\right] = \arg\min_{\mathbf{w}} \left(\left\|\mathbf{y} - \mathbf{X} \mathbf{w}\right\|^2 + \lambda \left\|\mathbf{w}\right\|^2\right)
+\end{equation}
+
+\begin{enumerate}[label=(\alph*)]
+    \item The Hessian of Ridge objective function is given by:
+    \begin{equation}
+        \mathbf{H}_{\annot{Ridge}} = \mathbf{X}^T \mathbf{X} + \lambda \mathbf{I}\qquad (\lambda > 0)
+    \end{equation}
+    it is evidently positive definite, let alone positive semi-definite.
+    \item For a \textit{strongly-convex} function $f$ defined on $\mathbb{R}^d$, it must have minimizer. This can be proven as follows. Let $x$ be any point in the domain, consider the convexity defined at $\mathbf{0}$ (any arbitrary reference point works just as fine):
+    \begin{equation}
+        \begin{aligned}
+            f(\mathbf{x}) &\geq f(\mathbf{0}) + \nabla f(\mathbf{0})^T \mathbf{x} + \frac{\alpha}{2} \left\| \mathbf{x} \right\|^2 \geq f(\mathbf{0}) - \left\|\nabla f(\mathbf{0})\right\| \left\|\mathbf{x}\right\| + \frac{\alpha}{2} \left\| \mathbf{x}\right\|^2 \\ 
+            f(\mathbf{x}) &\rightarrow +\infty \, (\left\|\mathbf{x} \right\| \rightarrow +\infty) \quad \Longleftrightarrow \quad f(\mathbf{x}) \rightarrow +\infty \, (\mathbf{x} \rightarrow \infty)
+        \end{aligned}
+    \end{equation}
+    Therefore function $f$ has lower bound on $\mathbb{R}^d$, and hence has minimizers. Let $\mathbf{x}^*_0$ be one minimizer of the function, and due to its being continuously differentiable, it must satisfy first-order optimality condition:
+    \begin{equation}
+        \nabla f(\mathbf{x}^*_0) = \mathbf{0}
+    \end{equation}
+    
+    Combining this condition with the strong convexity, one can establish a lower bound for any point in the domain:
+    \begin{equation}
+        \begin{aligned}
+            f(\mathbf{x}) &\geq f(\mathbf{x}^*_0) + \nabla f(\mathbf{x}^*_0)^T \left(\mathbf{x} - \mathbf{x}^*_0\right) + \frac{\alpha}{2} \left\| \mathbf{x} - \mathbf{x}^*_0 \right\|^2 \\ 
+            f(\mathbf{x}) &\geq f(\mathbf{x}^*_0) + 0 + \frac{\alpha}{2} \left\| \mathbf{x} - \mathbf{x}^*_0 \right\|^2 = f(\mathbf{x}^*_0) + \frac{\alpha}{2} \left\| \mathbf{x} - \mathbf{x}^*_0 \right\|^2 > f(\mathbf{x}^*_0) \quad \left(\forall \mathbf{x} \neq \mathbf{x}^*_0\right)
+        \end{aligned}
+    \end{equation}
+    This indicates that if a point $\mathbf{x}^*_0$ is a minimizer, it will also be the unique global minimizer in $\mathbb{R}^d$.
+    
+    \item The loss function for Ridge regression is fully quadratic. It can be rewritten in the following form:
+    \begin{equation}
+        L_{\annot{Ridge}} = \left(\mathbf{y} - \mathbf{X}\mathbf{w}\right)^T \left(\mathbf{y} - \mathbf{X}\mathbf{w}\right) + \lambda \mathbf{w}^T \mathbf{w} = \mathbf{y}^T \mathbf{y} - 2 \mathbf{y}^T \mathbf{X} \mathbf{w} + \mathbf{w}^T \left(\mathbf{X}^T \mathbf{X} + \lambda I\right) \mathbf{w}
+    \end{equation}
+    
+    Once can quickly conclude that since $\mathbf{H}_{\annot{Rodge}} \succeq \lambda \mathbf{I}$, $\lambda >0$. the loss function is \textit{strongly convex}. This implies that a unique minimizer, and also a global minimizer $\mathbf{w}^*_{\annot{Ridge}}$ exists $\forall \mathbf{X} \in \mathbb{R}^{n\times d}$.
+    
+    \item As its name suggests, the term $\lambda \left\|\mathbf{w}\right\|^2$ `regularizes' the topography of the original loss function. With increasing regularization strength, this term conditions the topography of the original loss function to be more like a well-conditioned, isotropic quadratic function, at the cost of losing information of $\mathbf{X}$ and $\mathbf{y}$.
+    
+    When $\lambda \rightarrow +\infty$, $\mathbf{w}^*_{\annot{Ridge}} \rightarrow 0$. This is the case when the topography is completely dominated by $\mathbf{I}$, and the minimum is achieved at the origin. When $\lambda \rightarrow 0$, $\mathbf{w}$ approaches the minimizer of the original loss function, but suffers from ill-conditioning of the original problem (e.g. non-uniqueness, etc.).
+\end{enumerate}
+
+\clearpage
+
+\section{Subgradients and Lasso}
+
+Linear regression with Lasso regularization takes the form:
+\begin{equation}
+    \arg\min_{\mathbf{w}\in \mathbb{R}^d} \left\{ \frac{1}{2} \left\|\mathbf{y} - \mathbf{X} \mathbf{w}\right\|_2^2 +  \lambda \left\|\mathbf{w}\right\|_1 \right\}
+\end{equation}
+To facilitate analyzing the minimizer, we invoke the concept of subgradient. A subgradient of a convex function $f: \mathbb{R}^d \mapsto \mathbb{R}$ at the point $\mathbf{x}$ is a vector $\mathbf{p}$ such that:
+\begin{equation}
+    f(\mathbf{z}) \geq f(\mathbf{x}) + \langle \mathbf{p}, \mathbf{z} - \mathbf{x} \rangle \qquad \forall \mathbf{z} \in \mathbb{R}^d
+\end{equation}
+The set of all subgradients at $\mathbf{x}$ is denoted by $\partial f(\mathbf{x})$. For differentiable $f$, $\partial f(\mathbf{x}) = \left\{\nabla f(\mathbf{x})\right\}$.
+
+\begin{enumerate}[label=(\alph*)]
+    \item For $f(x) = |x|$, the subgradients at point $x=0$ is given by:
+    \begin{equation}
+        \nabla f(0) = \left\{ p: |p| \leq 1\right\} = [-1, 1]
+    \end{equation}
+    
+    \item For the function $f(x) = \left\|\mathbf{x}\right\|_1 = \sum_{i=1}^d x_i$, its subgradients at $\mathbf{x} = \mathbf{0}$ is given by:
+    \begin{equation}
+        \nabla f(\mathbf{0}) = \left\{\mathbf{p}: \mathbf{p} \in \mathbb{R}^d,\quad |p_i| \leq 1\, (\forall i=1,\cdots d\right)\} = \left\{ \mathbf{p}: \left\|\mathbf{p}\right\|_\infty \leq 1 \right\}
+    \end{equation}
+    The conclusion follows naturally from the fact that:
+    \begin{equation}
+        f(\mathbf{x}) - f(\mathbf{0}) = \sum_{i=1}^d |x_i|,\quad \langle \mathbf{p}, \mathbf{x} \rangle = \sum_{i=1}^d p_i x_i
+    \end{equation}
+    We know that when $|p_i| \leq 1$ for all $p_i$, every term in the summation satisfies the subgradient criterion; and when some $|p_k| > 1$, a trial vector $\hat{\mathbf{x}}$ with $x_k = 1$ and $x_i=0$ ($\forall i\neq k$) violates the subgradient criterion.
+    
+    \item We first prove the following proposition. Let $g(\mathbf{x})$ and $h(\mathbf{x})$ be two convex functions, with subgradients $\partial g$ and $\partial h$, respectively. $f = g + h$ is naturally a convex function, with subgradients $\partial f$. Firstly, $\forall \mathbf{p} \in \partial g(\mathbf{x})$ and $\forall \mathbf{q} \in \partial h(\mathbf{x})$, we have:
+    \begin{equation}
+        f(\mathbf{z}) = g(\mathbf{z}) + h(\mathbf{z}) \geq g(\mathbf{x}) + \langle \mathbf{p}, \mathbf{z} - \mathbf{x} \rangle +  h(\mathbf{x}) + \langle \mathbf{q}, \mathbf{z} - \mathbf{x} \rangle = f(\mathbf{x}) + \langle \mathbf{p} + \mathbf{q}, \mathbf{z} - \mathbf{x} \rangle
+    \end{equation}
+    holds true for all $\mathbf{z} \in \mathbb{R}^d$. Therefore, $\mathbf{p} + \mathbf{q} \in \partial f(\mathbf{x})$. Its inverse proposition, i.e. if $\mathbf{s} \in \partial f$, it can be decomposed into $\mathbf{p} + \mathbf{q}$, where $\mathbf{p}\in \partial g(\mathbf{x})$ and $\mathbf{q} \in \partial h(\mathbf{x})$. I assume it is true here, but there is still some subtlety in the proof. The proof should be evident once one of $g$ and $h$ is differentiable at $\mathbf{x}$, which is indeed the case here.
+    
+    It follows from the proposition that the subgradient of Lasso problem is:
+    \begin{equation}
+        \partial L_{\annot{Lasso}}(\mathbf{w}) = \left\{ - \mathbf{X}^T (\mathbf{y} - \mathbf{X} \mathbf{w}) + \lambda \mathbf{p}: \mathbf{p} \in \partial \left\|\mathbf{w}\right\|_1 \right\}
+    \end{equation}
+    
+    Let $\mathbf{w}^*$ be a minimzer of the problem, it is sufficient and necessary that $\mathbf{0}$ is included in $\partial L_{\annot{Lasso}}(\mathbf{w}^*)$. Therefore,
+    \begin{equation}
+        \exists \mathbf{p} \in \partial \left\| \mathbf{w}^* \right\|_1 \quad \annot{s.t.}\quad \mathbf{X}^T (\mathbf{y} - \mathbf{X} \mathbf{w}^*) = \lambda \mathbf{p}
+    \end{equation}
+    
+    \item For 1D case, the equation is given by:
+    \begin{equation}
+        \sum_{i=1}^n x_i \left(y_i - x_i w\right) = \lambda p, \qquad w = \frac{\sum x_i y_i - \lambda p}{\sum x_i^2}
+    \end{equation}
+    Note $p$ is dependent on $\mathbf{w}^*$. When $\mathbf{w} > 0$, $p = 1$; when $\mathbf{w} < 0$, $p = -1$. When $\mathbf{w} = 0$, $p\in [-1, 1]$. Summarizing different situations, one can come up with the following solution of the minimizer of the 1D Lasso problem:
+    \begin{equation}
+        \mathbf{w}^* = \left\{
+        \begin{array}{ll}\displaystyle
+            \left(1 - \frac{\lambda}{|\sum x_i y_i|}\right) \frac{\sum_{i=1}^n x_i y_i }{\sum_{i=1}^n x_i^2},\qquad &\lambda < \bigg|\sum_{i=1}^n x_i y_i \bigg| \\[1em]
+            0, \qquad &\lambda \geq \bigg|\sum_{i=1}^n x_i y_i \bigg|            
+        \end{array}\right.
+    \end{equation}
+\end{enumerate}
+
+\clearpage
+
+\section{Model selection and regularization}
+
+\subsection{Validation Sets}
+\begin{enumerate}[label=(\alph*)]
+    \item False. There seems no reason why a smaller validation set can yield a better proxy of true generalization error.
+    \item False. Although it might be dependent on the specific dataset and parameterization, there is no apparent reason why a smaller training set is more likely to yield a model with lower generalization error.
+    \item False. It is indeed quite probable that the model performs better on training set than on validation set, but it may not always be the case.
+\end{enumerate}
+
+\subsection{Cross-validation}
+\begin{enumerate}[label=(\alph*)]
+    \item 
+\end{enumerate}
+
+\subsection{Akaike Information Criterion}
+
+\subsection{Regularization}
+
+\clearpage
+
+\section{Support Vector Machine (SVM)}
+
+\end{document}
+
