@@ -1,6 +1,7 @@
 # Ignore ipython-notebook checkpoints
 .ipynb_checkpoints
 */.ipynb_checkpoints/*
+__pycache__
 
 # Compiled files from LATEX
 *.synctex.gz
