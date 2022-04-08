@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Project 2: Medical dataset predictions
+utils.py
+
+Utility collections for task 2
 
 Introduction to Machine Learning @ ETH Zurich, FS 2022
 Group SHOPPINGNOW, author JTM
@@ -24,8 +26,8 @@ def patient_feat_flatten(feat_df: pd.DataFrame):
     
     # Add time-independent measurement: age
     ages_idx = pd.MultiIndex.from_tuples([("Age", 0)], names=["Measure", "Time"])
-    ages_pid = feat_df.loc[:, ["pid", "Age"]].drop_duplicates("pid", keep="first").set_index("pid")
-    ages_pid = pd.DataFrame(data=ages_pid, columns=ages_idx)
+    ages_pid = feat_df.loc[:, ["pid", "Age"]].drop_duplicates(subset="pid", keep="first").set_index("pid")
+    ages_pid = pd.DataFrame(data=ages_pid.to_numpy(), index=ages_pid.index, columns=ages_idx)
     
     feat_df_pid = pd.concat([feat_df_pid, ages_pid], axis=1)
     return feat_df_pid
