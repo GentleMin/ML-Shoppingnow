@@ -24,13 +24,9 @@ TESTS = ['LABEL_BaseExcess', 'LABEL_Fibrinogen', 'LABEL_AST', 'LABEL_Alkalinepho
 VITALS = ['LABEL_RRate', 'LABEL_ABPm', 'LABEL_SpO2', 'LABEL_Heartrate']
 
 save_suffix = ""
-verbose = True
 
 
 """0. Data reforming"""
-
-if verbose:
-    print("--- PREPARING DATASET ...")
 
 # Load data
 feat_train = pd.read_csv("./train_features.csv")

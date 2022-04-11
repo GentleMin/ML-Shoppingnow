@@ -9,7 +9,6 @@ Group SHOPPINGNOW, author JTM
 """
 
 
-from turtle import pen
 import numpy as np
 import pandas as pd
 
