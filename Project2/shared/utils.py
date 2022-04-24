@@ -19,6 +19,16 @@ TESTS = ['LABEL_BaseExcess', 'LABEL_Fibrinogen', 'LABEL_AST', 'LABEL_Alkalinepho
          'LABEL_Bilirubin_direct', 'LABEL_EtCO2']
 
 
+def flattened_columns(feat_fname="./train_features.csv"):
+    """Extract multi-index columns from original file."""
+    feat_df = pd.read_csv(feat_fname)
+    col_idx_levels = [feat_df.columns[3:], list(range(12))]
+    col_idx = list(pd.MultiIndex.from_product(col_idx_levels, names=["Measure", "Time"]))
+    col_idx.append(("Age", 0))
+    col_idx = pd.MultiIndex.from_tuples(col_idx, names=["Measure", "Time"])
+    return col_idx
+
+
 def patient_feat_flatten(feat_df: pd.DataFrame):
     """Flatten all patients data into a dataframe, where each line corresponds to 
     the measures of one single patient.
@@ -72,6 +82,35 @@ def get_score(df_true, df_pred):
     print(task1, task2, task3)
     
     return score
+
+
+def extract_patient_feature(df_patients: pd.DataFrame, fun_list):
+    """Extract features based on patient time series and append to dataframe"""
+    
+    # obtain all measured quantities
+    measurements = df_patients.columns.get_level_values(0).drop_duplicates(keep="first")
+    n_cols = df_patients.shape[1]
+    df_extract = pd.DataFrame()
+    data_temp = np.zeros((df_patients.shape[0], len(fun_list)))
+    
+    # Loop through measurements
+    for measure in measurements:
+        measured_array = df_patients.loc[:, measure]
+        if measured_array.shape[1] <= 1:
+            continue
+        
+        # Loop through feature callables
+        for i_fun, fun in enumerate(fun_list):
+            data_temp[:, i_fun] = fun(measured_array).to_numpy()
+            n_cols += 1
+        
+        feat_cols = pd.MultiIndex.from_product([[measure], ["feat{:02d}".format(i) for i in range(len(fun_list))]], names=["Measure", "Time"])
+        if df_extract.shape[0] == 0:
+            df_extract = pd.DataFrame(data=data_temp, index=df_patients.index, columns=feat_cols)
+        else:
+            df_extract = pd.concat([df_extract, pd.DataFrame(data=data_temp, index=df_patients.index, columns=feat_cols)], axis=1)
+    
+    return df_extract
 
 
 def fill_interp(df_patients: pd.DataFrame, inplace=False):
