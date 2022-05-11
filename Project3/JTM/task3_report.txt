@@ -1,0 +1,17 @@
+% Report
+
+We pre-processed the dataset using two pretrained ANNs:
+1) RESNET-18, with last fully-connected (FC) layer removed (set to identity in practice, same below)
+2) RESNET-50, with last FC layer removed
+The idea is to extract the feature vectors corresponding to each of the pictures, while avoiding redundant evaluation of deep neural networks, as the triplets contain redundant pictures and will result in repeated foward evaluation. We always prepocess the pictures by resizing to 256*256 and then crops at the center to 224*224 pixels.
+
+On top of the RESNET outputs, we design a neural network that contains only FC layers to produce a 32-dimensional output for each of the picture. At the base layer, a dropout rate of p=0.2 is applied to discourage overfitting and enhance robustness. The layers are summarized as follows:
+1) FC Layer with dropout p=0.2, in_features = 512, out_features = 256 for RESNET-18 output; (2048, 512) or (2048, 1024) for RESNET-50;
+2) Rectified Linear Unit (ReLU) as activation;
+3) FC Layer, (256, 128) for RESNET-18 output; (512, 128) or (1024, 128) for RESNET-50 output;
+4) ReLU activation;
+5) FC Layer, (128, 32) for both RESNET-18 and RESNET-50 outputs.
+
+We use the triplet (Siamese) network and a triplet margin loss for training. For each triplet, the three feature vectors involved in the triplet are passed through the identical network as described above, and the loss function is calculated by triplet margin loss of the three output vectors. The distance of output vectors are evaluated simply by its Euclidean distance. A validation set is set aside to monitor the loss evolution to prevent overfitting. Each model is trained to epoch 10.
+
+Using the 3 models (one based on RESNET-18 outputs, two with different FC2 size based on RESNET-50 outputs), we determine some good performing models during the process. We ensemble the 3 good-performing models, and take their majority vote for each of the test triplet.
