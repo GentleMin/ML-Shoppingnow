@@ -1,0 +1,219 @@
+\documentclass[a4paper, 10pt]{article}
+\usepackage[utf8]{inputenc}
+
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{mathrsfs}
+% \usepackage{mathabx}
+
+\usepackage{geometry}
+\geometry{left=2.0cm, right=2.0cm, top=2cm, bottom=2.5cm}
+\usepackage{parskip}
+
+\usepackage{bm}
+\usepackage{enumitem}
+\usepackage{caption}
+\usepackage{booktabs}
+
+\newcommand{\annot}[1]{{\rm #1}}
+
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    citecolor=blue,
+    urlcolor=cyan,
+}
+
+% \renewcommand{\baselinestretch}{1.2}
+
+\usepackage{listings}
+\usepackage{xcolor}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{stdcodestyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\small,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=stdcodestyle}
+
+\title{{\bfseries Introduction to Machine Learning} \\ Answers to Exercise 4 \\ Convolutional Neural Networks \& Dimension Reduction}
+\author{Jingtao Min}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{Clustering with k-means}
+
+\begin{enumerate}[label=(\alph*)]
+
+    \item $k=1$, the optimization problem is given by:
+    \begin{equation}
+        \min_{\bm{\mu}} \sum_{i=1}^3 \|\mathbf{x}_i - \bm{\mu} \|_2^2
+    \end{equation}
+    with the closed form solution:
+    \begin{equation}
+        \bm{\mu} = \frac{1}{3}\sum_{i=1}^3 \mathbf{x}_i = \left(-\frac{1}{3}, \frac{1}{3}\right)
+    \end{equation}
+
+    \item $k=2$, supposing the cluster centroids are initialized at $\bm{\mu}_1 = (0, 0)$ and $\bm{\mu}_2 = (1, -1)$, there will be only one cluster assignment and one update that moves $\bm{\mu}_1$ to the centroid $(-1/3, 1/3)$. No new assignment or update is conducted on $\bm{\mu}_2$ since it is away from the samples.
+    
+    \item $k=3=$ number of samples. In this case we can assign each sample to a cluster centered at the position of itself, so that the objective goes to zero:
+    \begin{equation}
+        \bm{\mu}_1 = \mathbf{x}_1 = (1,1),\quad \bm{\mu}_2 = \mathbf{x}_2 = (-1,1), \quad \bm{\mu}_3 = \mathbf{x}_3 = (1,-1), \qquad \widehat{R}(\bm{\mu}) = \sum_{i=1}^3 \| \mathbf{x}_i - \bm{\mu}_i \|_2^2 = 0
+    \end{equation}
+    
+\end{enumerate}
+
+
+\section{Dimensionality reduction with PCA}
+
+Principle component analysis (PCA) can be expressed as the following optimization problem:
+\begin{equation}
+    C_* = \frac{1}{n} \min_{\mathbf{W}^T \mathbf{W} = \mathbf{I}} \frac{1}{n} \sum_{i=1}^n \|\mathbf{W}\mathbf{z}_i - \mathbf{x}_i\|_2^2
+\end{equation}
+
+where $\mathbf{z}_i \in \mathbb{R}^k$ and $\mathbf{x}_i \in \mathbb{R}^d$, $k \ll d$; $\mathbf{W} \in \mathbb{R}^{d\times k}$. We assume that the data points are centered, i.e. $\sum_{i=1}^n \mathbf{x}_i = \mathbf{0}$.
+
+\begin{enumerate}[label=(\alph*)]
+    \item The value of ${\rm tr}\left(\mathbf{W}_* \mathbf{W}_*^T\right)$. The trace can be rewritten as:
+    \begin{equation}
+        {\rm tr}\left(\mathbf{W}_* \mathbf{W}_*^T\right) = \sum_{i=1}^d \sum_{j=1}^k (w_*)_{ij} (w_*)_{ij} = \sum_{j=1}^k \sum_{i=1}^d (w_*)_{ij} (w_*)_{ij} = {\rm tr}\left(\mathbf{W}_*^T \mathbf{W}_*\right) = {\rm tr}(\mathbf{I}_k) = k
+    \end{equation}
+
+    \item Given the determined weights $\mathbf{W}_*$, the embeddings can be simply obtained by a pseudoinverse:
+    \begin{equation}
+        \mathbf{z}_i^* = \left(\mathbf{W}_*^T \mathbf{W}_*\right)^{-1} \mathbf{W}_*^T \mathbf{x}_i = \mathbf{W}_*^\dagger \mathbf{x}_i
+    \end{equation}
+
+    \item Let $\lambda_1 \geq \lambda_2 \geq \cdots \lambda_d \geq 0$ be the eigenvalues of the empirical covariance matrix $\bm{\Sigma} = \frac{1}{n}\sum_{i=1}^n \mathbf{x}_i \mathbf{x}_i^T \in \mathbb{R}^{d\times d}$. The objective is then simply the sum of the trailing eigenvalues of the empirical covariance:
+    \begin{equation}
+        C_* = \sum_{i=k+1}^d \lambda_i
+    \end{equation}
+
+    \item In standard PCA, the mapping vectors are calculated via spectral decomposition of the empirical covariance matrix:
+    \begin{equation}
+        \max_{\mathbf{w}_i^T \mathbf{w}_j = \delta_{ij}} \sum_{i=1}^k \mathbf{w}_i^T \left(\mathbf{X}\mathbf{X}^T\right) \mathbf{w}_i, \quad \mathbf{X} \mathbf{X}^T \in \mathbb{R}^{d\times d}
+    \end{equation}
+    In the kernelized version, we assume that $\mathbf{w}_i$ should live in the span of $\mathbf{X}$, therefore the problem is converted to determining the coefficients $\bm{\alpha}_i$:
+    \begin{equation}
+        \max_{\bm{\alpha}_i^T \mathbf{X}^T \mathbf{X} \bm{\alpha}_j = \delta_{ij}} \sum_{i=1}^k \bm{\alpha}_i^T \left(\mathbf{X}^T \mathbf{X}\mathbf{X}^T \mathbf{X}\right) \bm{\alpha}_i, \quad \mathbf{X}^T \mathbf{X}\mathbf{X}^T \mathbf{X} \in \mathbb{R}^{n\times n}
+    \end{equation}
+
+    \item If two features are identical in the whole dataset, it is sure that the $\mathbf{X}$ is row rank deficient by at least 1, and hence the resulting empirical covariance matrix $\mathbf{X} \mathbf{X}^T \in \mathbb{R}^{d\times d}$ is rank deficient by at least 1, i.e. ${\rm rank}\left(\mathbf{X}\mathbf{X}^T\right) \leq d - 1$. With this one can conclude that a $d-1$ dimensional embedding can be found with perfect reconstruction (zero reconstruction error, or $C_*=0$).
+\end{enumerate}
+
+
+\section{Convolutional layers and fully connected layers}
+Considering a convolutional layer with input $d\times I_{\rm in}\times I_{\rm in}$ and output $n\times I_{\rm out}\times I_{\rm out}$, where $d$ and $n$ are number of channels for input and output, respectively. The convolution filter has dimension $m\times m$ for each channel.
+\begin{enumerate}[label=(\alph*)]
+    \item The (pre-activation) output is related to the input via:
+    \begin{equation}
+        \begin{aligned}
+            \mathbf{f}_{i} &= \sum_{k=1}^d \mathbf{a}_{ik} * \mathbf{x}_k \\ 
+            \left(\mathbf{f}_i\right)_{pq} &= \sum_{k=1}^d \sum_{s=1}^m \sum_{t=1}^m \left(\mathbf{a}_{ik}\right)_{st} \left(\mathbf{x}_k\right)_{p+m-s,q+m-t} \\ 
+            f_{ipq} &= \sum_{k=1}^d \sum_{p'=p}^{p+m-1} \sum_{q'=q}^{q+m-1} a_{i,k,p-p'+m, q-q'+m} \, x_{kp'q'}
+        \end{aligned}
+    \end{equation}
+    We can define the following order-6 tensor, 
+    \begin{equation}
+        A_{kp'q'}^{ipq} = \left\{\begin{aligned}
+            (\mathbf{a}_{ik})_{p-p'+m, q-q'+m} & \qquad p \leq p' < p + m, \, q \leq q' < q + m\\
+            0 & \qquad {\rm else}
+        \end{aligned}\right.
+    \end{equation}
+    The convolutional layer can be written as:
+    \begin{equation}
+        f_{ipq} = \sum_{k=1}^d \sum_{p',q'=1}^{I_{\rm in}} A_{kp'q'}^{ipq} \, x_{kp'q'} = \sum_{kp'q'} A_{kp'q'}^{ipq} x_{kp'q'}
+    \end{equation}
+    The form is already that of a fully connected linear layer. To reinstate the expression to be more explicit, one can flatten the order-3 matrices $f_{ipq}$ and $x_{kp'q'}$ into vectors, in which process the three-element index tuples are uniquely mapped to integers:
+    \begin{equation}
+        (i, p, q) \mapsto (i-1) I^2_{\rm out} + (q-1) I_{\rm out} + p, \qquad (k, p', q') \mapsto (k-1) I^2_{\rm in} + (q'-1) I_{\rm in} + p'
+    \end{equation}
+    And the convolutional layer can be reinstated in terms of much higher-dimensional matrices and vectors:
+    \begin{equation}
+        \mathbf{\hat{f}} = \hat{f}_{i} = \sum_{j=1}^{I_{\rm in}^2 d} \widehat{A}_{ij} \hat{x}_j = \mathbf{\widehat{A}} \mathbf{\hat{x}}, \qquad \mathbf{\hat{f}} \in \mathbb{R}^{I_{\rm out}^2 n},\quad \mathbf{\hat{x}} \in \mathbb{R}^{I_{\rm in}^2 d}, \quad \mathbf{\widehat{A}} \in \mathbb{R}^{I_{\rm out}^2 n \times I_{\rm in}^2 d}
+    \end{equation}
+
+    \item Since convolutional layers are a special type of fully connected linear layers, their expressivity is bounded by the expressivity of fully connected layers; in other words, the family of functions $\mathscr{f}_c(\mathbf{x}; \mathbf{W})$ that can be obtained from convolutional layers is a subset of those that can be expressed via fully connected layers.
+    
+    \item The specialty of convolutional layer compared to an arbitrary fully connected linear layer is its extreme sparsity. According to the original form or from Eq. 11 one can see that there are $m^2nd$ nontrivial elements, resulting in a highly band-limited $\mathbf{\widehat{A}}$. Expressing it in fully connected linear layer would require $I_{\rm out}^2 I_{\rm in}^2 nd \gg m^2 nd$ elements and corresponding computational complexity.
+    
+    \item Combining the previous two answers, we understand convolutional layers as a type of layer less expressive than ordinary fully connected layers, but also a type of layer whose computational cost and dimensionality is drastically reduced (marginal to be precise) compared to its fully connected counterpart.
+    
+    In problems where convolutions are assumed to be sufficient to extract important features, e.g. in image processing, convolutions should suffice to extract correlations and local textures of pixels, convolutional layers provide a pratical implementation of ANN in terms of computational cost and convergence, while maintaining expressivity.
+\end{enumerate}
+
+\section{Linear autoencoders and PCA}
+
+An autoencoder with linear activations can be fully expressed in linear operations and matrix-vector multiplications. Denoting the encoder as $\mathbf{A}_{\rm enc} \in \mathbb{R}^{m\times d}$ and the decoder as $\mathbf{A}_{\rm dec} \in \mathbb{R}^{d\times m}$, the objective of autoencoder under squared loss can be expressed in the form:
+\begin{equation}
+    \min_{\mathbf{A}} \sum_i \| \mathbf{x}_i - \mathbf{A}_{\rm dec} \mathbf{A}_{\rm enc} \mathbf{x}_i \|_2^2 = \min_{\mathbf{A}} \| \mathbf{X} - \mathbf{A}_{\rm dec} \mathbf{A}_{\rm enc} \mathbf{X} \|_F^2
+\end{equation}
+where $\|\cdot \|_F$ is the Frobenius norm. It is then apparent that the major use of the bottleneck layer is to limit the rank of the operator so that ${\rm rank} \left(\mathbf{A}_{\rm dec} \mathbf{A}_{\rm enc}\right) \leq m$. Using the Eckart-Young theorem, we see that the optimal solution should be given by:
+\begin{equation}
+    \mathbf{A}_{\rm dec} \mathbf{A}_{\rm enc} \mathbf{X} = \mathbf{X}_m = \mathbf{U} \bm{\Sigma}_{m} \mathbf{V}^T
+\end{equation}
+where $\mathbf{X}_m$ is the truncated-SVD version of $\mathbf{X}$ by setting $\sigma_i = 0$ ($i > m$), and $\bm{\Sigma}_m = {\rm diag}\left(\sigma_1, \cdots \sigma_m, 0 \cdots 0\right)$. Decomposing $\mathbf{X}$ using SVD we can unravel the optimal choice of the encoder/decoder:
+\begin{equation}
+    \begin{aligned}
+        &\mathbf{A}_{\rm dec} \mathbf{A}_{\rm enc} \mathbf{U} \bm{\Sigma} \mathbf{V} = \mathbf{U} \bm{\Sigma}_m \mathbf{V}^T \\
+        \Longrightarrow \quad 
+        &\mathbf{A}_{\rm dec} \mathbf{A}_{\rm enc} = \mathbf{U} \left(\bm{\Sigma}_m \bm{\Sigma}^{-1}\right) \mathbf{U}^T = \mathbf{U} \begin{bmatrix} \mathbf{I}_m & \mathbf{0} \\ \mathbf{0} & \mathbf{0} \end{bmatrix} \mathbf{U}^T = \mathbf{U}_m \mathbf{U}_m^T
+    \end{aligned}
+\end{equation}
+where $\mathbf{U}_m = [\mathbf{u}_1 | \cdots | \mathbf{u}_m] \in \mathbb{R}^{d\times m}$ contains the left singular vectors corresponding to the $m$ leading singular values of $\mathbf{X}$. Note the dimension match between $\mathbf{A}$ and $\mathbf{U}_m$, we therefore propose that the optimal autoencoder can be constructed using the following symmetric encoder-decoder pair (although the construction is non-unique):
+\begin{equation}
+    \mathbf{A}_{\rm enc} = \mathbf{U}_m^T = \begin{bmatrix}
+        \mathbf{u}_1^T \\ \vdots \\ \mathbf{u}_m^T
+    \end{bmatrix} = \mathbf{A}_{\rm dec}^T, \qquad 
+    \mathbf{A}_{\rm dec} = \mathbf{U}_m = \begin{bmatrix}
+        \mathbf{u}_1 & \cdots & \mathbf{u}_m
+    \end{bmatrix}
+\end{equation}
+
+Noticing the relation between SVD and spectral (eigenvalue) decomposition, we have
+\begin{equation}
+    \mathbf{X} \mathbf{X}^T = \left(\mathbf{U} \bm{\Sigma} \mathbf{V}^T\right) \left(\mathbf{V} \bm{\Sigma} \mathbf{U}^T\right) = \mathbf{U} \bm{\Sigma}^2 \mathbf{U}^T
+\end{equation}
+so the left singular vectors of $\mathbf{X}$ are the same as the eigenvectors of the empirical covariance $\mathbf{X} \mathbf{X}^T$, and the singular values have the same ordering as the eigenvalues. Recalling the objective and the corresponding mapping in PCA to extract an $m$-dimensional embedding:
+\begin{equation}
+    \min_{\mathbf{W}^T \mathbf{W} = \mathbf{I}} \sum_{i} \| \mathbf{x}_i - \mathbf{W}\mathbf{W}^T \mathbf{x}_i\|_2^2 = \min_{\mathbf{W}^T \mathbf{W} = \mathbf{I}} \| \mathbf{X} - \mathbf{W}\mathbf{W}^T \mathbf{X}\|_F^2, \quad \mathbf{W}_* = \begin{bmatrix}
+        \mathbf{u}_1 & \cdots & \mathbf{u}_m
+    \end{bmatrix}
+\end{equation}
+We now see that the autoencoder with $m$-dimensional bottleneck is exactly the same as the $m$-dimensional embedding mappings via the relation:
+\begin{equation}
+    \mathbf{A}_{\rm enc} = \mathbf{W}_*^T = \begin{bmatrix}
+        \mathbf{u}_1^T \\ \vdots \\ \mathbf{u}_m^T
+    \end{bmatrix}, \qquad 
+    \mathbf{A}_{\rm dec} = \mathbf{W}_* = \begin{bmatrix}
+        \mathbf{u}_1 & \cdots & \mathbf{u}_m
+    \end{bmatrix}
+\end{equation}
+And the loss function is also exactly the same. It is clear at this stage that there are multiple optimal solutions for the autoencoder; the simplest case, for instance, would be to apply scaling to encoder and inverse the scaling in the decoder. The embeddings might change in this sense, but the optimal loss remains the same.
+
+\end{document}
+
