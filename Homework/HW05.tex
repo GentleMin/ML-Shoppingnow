@@ -1,0 +1,210 @@
+\documentclass[a4paper, 10pt]{article}
+\usepackage{mathdoc}
+
+\title{{\bfseries Introduction to Machine Learning} \\ Answers to Exercise 5 \\ Probabilistic Modelling \& Decision Theory}
+\author{Jingtao Min}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{Multiclass logistic regression}
+
+Posterior probabilities for multiclass logistic regression can be given as a softmax transformation of hyperplanes:
+\begin{equation}
+    f_k(y, x, a_1, \cdots a_K) = P(y=k | X=\mathbf{x}, a_1, \cdots a_K) = \frac{\exp\left(\mathbf{a}_k^T \mathbf{x}\right)}{\sum_j \exp\left(\mathbf{a}_j^T \mathbf{x}\right)} = \frac{\exp\left(s_k\right)}{\sum_j \exp\left(s_j\right)}
+\end{equation}
+Consider the derivative $D_{ki} = \frac{\partial f_k}{\partial s_i}$:
+
+\begin{enumerate}[label=(\alph*)]
+    \item The derivative element $D_{ki}$ \textit{per se} is a scalar, but the derivatives obtained in this form constitute a $K\times K$ matrix.
+    \item The derivative is expressed as:
+    \begin{equation}
+        D_{ki} = \frac{\partial}{\partial s_i} \left(\frac{\exp\left(s_k\right)}{\sum_j \exp\left(s_j\right)}\right) = \frac{\delta_{ik} e^{s_k} \sum_j e^{s_j} - e^{s_k + s_i}}{\left(\sum_j e^{s_j}\right)^2} = \delta_{ik} f_k - f_k f_i = \left(\delta_{ik} - f_i\right) f_k
+    \end{equation}
+
+    \item In practice the derivative by $\mathbf{a}_i$ is sought, as these vectors are the unknowns where training takes place. Given a class $k$ and the derivative takes the form
+    \begin{equation}
+        \frac{\partial f_k}{\partial \mathbf{a}_i} = \frac{\partial f_k}{\partial s_i} \frac{\partial s_i}{\partial \mathbf{a}_i} = D_{ki} \mathbf{x}
+    \end{equation}
+    \item Softmax implicit requires that $s_i$ cannot be arbitrarily large. For instance, if $s_i > 10^3$, explicit computation of $\exp\left(s_i\right)$ is not possible due to overflow, as it reaches limit of the double-precision exponent. It might, however, be possible if proper scaling is used beforehand, as follows.
+    \item First, pick the extreme of $|s_j|$, i.e. $s_{i^*} = \min_{i \in K} |s_i|$; then, substract this value from other weights:
+    \begin{equation}
+        f_k = \frac{\exp(s_k)}{\sum_i \exp(s_i)} = \frac{\exp(s_k - s_{i^*})}{\sum_i \exp(s_i - s_{i^*})} = \frac{\exp(s'_k)}{1 + \sum_{i\neq i^*} \exp(s'_i)}
+    \end{equation}
+\end{enumerate}
+
+\section{Decision theory}
+
+Consider an binary option investment problem, where the information is encoded as a vector $\mathbf{x} \in \mathbb{R}^d$.
+
+\begin{enumerate}[label=(\alph*)]
+    \item Note that binary option means all or nothing. Therefore, the probability of gaining profit from a binary option is always a binary/Bernoulli distribution. Denoting the weights used in the logistic model as $\mathbf{w}$, the estimated conditional probability of gaining profit from the binary option is given by:
+    \begin{equation}
+        P(y|\mathbf{x}, \mathbf{w}) = {\rm Ber}\left(y; \sigma(\mathbf{w}^T \mathbf{x})\right)
+    \end{equation}
+    where ${\rm Ber}\left(y; \sigma(\mathbf{w}^T \mathbf{x})\right)$ is Bernoulli distribution with $p=\sigma(\mathbf{w}^T \mathbf{x})$. $y=1$ means the investment profits, while $y=0$ means no payoff.
+    
+    The action set $\mathcal{A}$ includes two actions: invest in \{secure investment, binary option\}, denoted by $a=0$ and $a=1$, respectively. Finally, under these definitions of events $\mathcal{Y}$ and actions $\mathcal{A}$ we come to the definition of the cost function as follows Tab. 1. The values of the costs are computed via how much money is lost compared to the best action scenario under given event $y$. I didn't think of assigning costs like this \textit{a priori}, but followed what the reference solution seems to imply.
+
+    \begin{table}[ht]
+        \centering
+        \caption{Cost function setup}
+        \begin{tabular}{p{4cm}|p{2.5cm}|p{2.5cm}}
+            \toprule
+            Outcomes / Actions & $a=0$ (Secure) & $a=1$ (Binary) \\ 
+            \midrule
+            $y=0$ (No binary payoff) & 0 & 1200 \\
+            \hline
+            $y=1$ (Binary profit) & 400 & 0 \\
+            \bottomrule
+        \end{tabular}
+    \end{table}
+
+    \item If the investor decides to buy a binary option, the expected cost:
+    \begin{equation}
+        \mathbb{E}_y[C(y|a=1)|\mathbf{x}] = 1200 \left(1 - p(\mathbf{x})\right) = 1200 \left(1 - \sigma(\mathbf{w}^T \mathbf{x})\right)
+    \end{equation}
+
+    \item The decision rule derives from maximum expected utility / minimum expected cost. Given $\mathbf{x}$ the expected cost for binary option is already derived. The expected cost for secure investment is given by:
+    \begin{equation}
+        \mathbb{E}_y[C(y|a=0)|\mathbf{x}] = 400 \, p(\mathbf{x}) = 400 \, \sigma(\mathbf{w}^T \mathbf{x})
+    \end{equation}
+    We have the inequality:
+    \begin{equation}
+        \mathbb{E}_y[C(y|a=0)|\mathbf{x}] \leq \mathbb{E}_y[C(y|a=1)|\mathbf{x}] \quad \left(p(\mathbf{x}) \leq \frac{3}{4} = 0.75\right)
+    \end{equation}
+    Hence the decision rule:
+    \begin{equation}
+        f(\mathbf{x}) : \left\{\begin{aligned}
+            &a = 0, \qquad p(\mathbf{x}) \leq 0.75 \\ 
+            &a = 1, \qquad p(\mathbf{x}) > 0.75 \\ 
+        \end{aligned}\right.
+    \end{equation}
+
+    \item We denote the binary outcome of the model as random variable $\widetilde{\mathcal{Y}}$ and follow the same convention as $y$. If the model outputs binary outcome is only correct with probability $p$, we can expand the actions into four ($2\times 2$) combinations of model output and actual decisions:
+    \begin{table}[ht]
+        \centering
+        \caption{Cost function setup}
+        \begin{tabular}{p{4cm}|p{2.7cm}|p{2.7cm}|p{2.2cm}|p{2.3cm}}
+            \toprule
+            Outcomes / Actions & $\widetilde{y}=0$ (No profit) $a=0$ (Secure) & $\widetilde{y}=0$ (No profit) $a=1$ (Binary) & $\widetilde{y}=1$ (Profit) $a=0$ (Secure) & $\widetilde{y}=1$ (Profit) $a=1$ (Binary) \\  
+            \midrule
+            $y=0$ (No profit) & 0 & 1200 & 0 & 1200 \\
+            \hline
+            $y=1$ (Profit) & 400 & 0 & 400 & 0 \\
+            \bottomrule
+        \end{tabular}
+    \end{table}
+
+    The expected cost for each decision:
+    \begin{equation}
+        \begin{aligned}
+            \mathbb{E}_y[C(y|\widetilde{y}=0, a=0)] &= 400 \, (1-p) \\ 
+            \mathbb{E}_y[C(y|\widetilde{y}=0, a=1)] &= 1200 \, p \\ 
+            \mathbb{E}_y[C(y|\widetilde{y}=1, a=0)] &= 400 \, p \\ 
+            \mathbb{E}_y[C(y|\widetilde{y}=1, a=1)] &= 1200 \, (1-p) \\ 
+        \end{aligned}
+    \end{equation}
+    And finally the decision function:
+    \begin{equation}
+        f(\widetilde{y}=0) : \left\{\begin{aligned}
+            a = 0, \qquad (p \geq 0.25) \\ 
+            a = 1, \qquad (p < 0.25) \\ 
+        \end{aligned}\right.\qquad
+        f(\widetilde{y}=1) : \left\{\begin{aligned}
+            a = 0, \qquad (p \leq 0.75) \\ 
+            a = 1, \qquad (p > 0.75) \\ 
+        \end{aligned}\right.
+    \end{equation}
+\end{enumerate}
+
+\section{Naive Bayes estimate}
+
+Consider binary classification problem, where $\mathcal{Y}$ is the set of labels and $\mathcal{X} = \mathbb{N}^d$ is a $d$-dimensional feature space (each element is a natural number). A training set $D = \{(\mathbf{x}_i, y_i)\}$ of $n$ samples is given, where all features are geometric distributed with parameters $\hat{p}_j$ ($j\in \{1, 2, \cdots d\}$).
+
+\begin{enumerate}[label=(\alph*)]
+    \item Let $\{z_i\}_{i=1}^m$ be $m$ i.i.d. observations of a $p$-geometric distributed random variable. The likelihood function given parameter $p$:
+    \begin{equation}
+        \begin{aligned}
+            P\left(Z=k|p\right) &= (1 - p)^{k-1} p \\
+            P\left(\{z_i\}_{i=1}^m | p\right) &= \prod_{i=1}^m (1 - p)^{z_i-1} p = (1 - p)^{\sum_{i=1}^m z_i - m} \, p^m \\
+            \ln P\left(\{z_i\}_{i=1}^m | p\right) &= \left(\sum_{i=1}^m z_i - m\right) \, \ln (1 - p) + m \ln p
+        \end{aligned}
+    \end{equation}
+    Maximizing the likelihood is equivalently maximizing the log likelihood, and the optimum satisfies:
+    \begin{equation}
+        \frac{\partial}{\partial p} \ln P\left(\{z_i\}_{i=1}^m | p\right) = \frac{m}{p} - \frac{\sum_{i=1}^m z_i - m}{1 - p} = 0 \quad \Longrightarrow \quad p = \frac{m}{\sum_{i=1}^m z_i} = \frac{1}{\bar{z_i}}
+    \end{equation}
+
+    \item The likelihood function given the training dataset:
+    \begin{equation}
+        \begin{aligned}
+            P(\mathbf{X}|Y) = \sum_{i=1}^d P(X_i | Y) &= \prod_{j=1}^d \left(1 - \hat{p}_{j,y}\right)^{x_j - 1} \hat{p}_{j,y} \\ 
+            P({\mathbf{x}_i}_{i=1}^{n_y} | Y = y) &= \prod_{j=1}^d \left(1 - \hat{p}_{j,y}\right)^{\sum_{i=1}^{n_y} x^{(i)}_j - n_0} \hat{p}_{j,y}^{n_y}
+        \end{aligned}
+    \end{equation}
+    According to the previous conclusion, we have the estimates
+    \begin{equation}
+        \hat{p}_{j,y} = \frac{\{{\rm Count} \, y_i=y\}}{\sum_{y_i = y} x^{(i)}_j}
+    \end{equation}
+    Once the parameters are estimated via MLE, the joint distribution can be stated:
+    \begin{equation}
+        P(\mathbf{X}, Y) = P(\mathbf{X} | Y) P(Y) = P(Y) \sum_{i=1}^d P(X_i | Y) = p_y \prod_{j=1}^d \left(1 - \hat{p}_{j,y}\right)^{x_j - 1} \hat{p}_{j,y}
+    \end{equation}
+
+    \item Given a new data $\mathbf{x}$, the prediction is computed via the posterior distribution:
+    \begin{equation}
+        \begin{aligned}
+            P(Y | \mathbf{X} = \mathbf{x}) &\propto p_y \prod_{j=1}^d \left(1 - \hat{p}_{j,y}\right)^{x_j - 1} \hat{p}_{j,y} \\ 
+            P(Y = 0 | \mathbf{X} = \mathbf{x}) &= C p_0 \prod_{j=1}^d \left(1 - \hat{p}_{j,0}\right)^{x_j - 1} \hat{p}_{j,0} \\
+            P(Y = 1 | \mathbf{X} = \mathbf{x}) &= C p_1 \prod_{j=1}^d \left(1 - \hat{p}_{j,1}\right)^{x_j - 1} \hat{p}_{j,1} \\
+        \end{aligned}
+    \end{equation}
+    The two probabilities can be compared by taking their quotient:
+    \begin{equation}
+        \frac{P(Y=1|\mathbf{X}=\mathbf{x})}{P(Y=0|\mathbf{X}=\mathbf{x})} = \frac{p_1}{p_0} \prod_{j=1}^d \left(\frac{1 - \hat{p}_{j,1}}{1 - \hat{p}_{j,i}}\right)^{x_j - 1} \left(\frac{\hat{p}_{j,1}}{\hat{p}_{j,0}}\right) = \frac{C_1}{C_0} \prod_{j=1}^d \left(\frac{1 - \hat{p}_{j,1}}{1 - \hat{p}_{j,i}}\right)^{x_j - 1}
+    \end{equation}
+    The prediction boundary can be given by setting $P(Y=1|\mathbf{X}=\mathbf{x}) = P(Y=0|\mathbf{X}=\mathbf{x})$, equivalently:
+    \begin{equation}
+        \begin{aligned}
+            \prod_{j=1}^d \left(\frac{1 - \hat{p}_{j,1}}{1 - \hat{p}_{j,i}}\right)^{x_j - 1} &= \frac{p_0}{p_1} \prod_{j=1}^d \frac{\hat{p}_{j,0}}{\hat{p}_{j,1}} \\
+            \sum_{j=1}^d (x_j - 1) \ln \left(\frac{1 - \hat{p}_{j,1}}{1 - \hat{p}_{j,0}}\right) = \ln \prod_{j=1}^d \left(\frac{1 - \hat{p}_{j,1}}{1 - \hat{p}_{j,i}}\right)^{x_j - 1} &= \ln \frac{p_0}{p_1} + \sum_{j=1}^d \ln \frac{\hat{p}_{j,0}}{\hat{p}_{j,1}} \equiv a \\ 
+            a_j = \ln \left(\frac{1 - \hat{p}_{j,1}}{1 - \hat{p}_{j,0}}\right) \quad \Longrightarrow \quad \sum_{j=1}^d a_j (x_j - 1) &= a \\
+            \quad \Longrightarrow \quad \mathbf{a}^T \mathbf{x} = \sum_{j=1}^d a_j x_j &= a + \sum_{j=1}^d a_j \equiv b
+        \end{aligned}
+    \end{equation}
+    Therefore the boundary is a hyperplane.
+
+    \item Assuming $x_2\equiv x_3 \equiv \cdots x_d$ are indentical features, we can assert that $\hat{p}_{2,y} \equiv \hat{p}_{3,y} \equiv \cdots \hat{p}_{d,y}$, the coefficients for the hyperplane:
+    \begin{equation}
+        a_{2\cdots d} = \ln \frac{1 - \hat{p}_{2,1}}{1 - \hat{p}_{2, 0}}, \quad a = \ln \frac{p_0}{p_1} + \ln \frac{\hat{p}_{1,0}}{\hat{p}_{1,1}} + (d - 1) \ln \frac{\hat{p}_{2,0}}{\hat{p}_{2,1}} = \ln \frac{p_0 \hat{p}_{1,0} \hat{p}_{2,0}^{d-1}}{p_1 \hat{p}_{1,1} \hat{p}_{2,1}^{d-1}}
+    \end{equation}
+    And the hyperplane using the naive approach is given by:
+    \begin{equation}
+        \left(\ln \frac{1 - \hat{p}_{1,1}}{1 - \hat{p}_{1,0}}\right) x_1 + (d - 1)\left(\ln \frac{1 - \hat{p}_{2,1}}{1 - \hat{p}_{2,0}}\right) x_2 = \ln \frac{p_0}{p_1} \frac{\hat{p}_{1,0} (1 - \hat{p}_{1,1})}{\hat{p}_{1,1} (1 - \hat{p}_{1,0})} \frac{\hat{p}_{2,0}^{d-1}(1 - \hat{p}_{2,1})^{d-1}}{\hat{p}_{2,1}^{d-1}(1 - \hat{p}_{2,0})^{d-1}}
+    \end{equation}
+    It is however clear that only two features are present in the data. Therefore the appropriate hyperplane that maximizes the posterior is:
+    \begin{equation}
+        \left(\ln \frac{1 - \hat{p}_{1,1}}{1 - \hat{p}_{1,0}}\right) x_1 + \left(\ln \frac{1 - \hat{p}_{2,1}}{1 - \hat{p}_{2,0}}\right) x_2 = \ln \frac{p_0}{p_1} \frac{\hat{p}_{1,0} (1 - \hat{p}_{1,1})}{\hat{p}_{1,1} (1 - \hat{p}_{1,0})} \frac{\hat{p}_{2,0}(1 - \hat{p}_{2,1})}{\hat{p}_{2,1}(1 - \hat{p}_{2,0})}
+    \end{equation}
+\end{enumerate}
+
+\section{Bias-variance trade-off}
+
+Consider a dataset of $n$ i.i.d. samples $\{x_i, y_i\}_{i=1}^d$ and least squares regression, the prediction error can be decomposed into (bias$^2$) + (variance) + (noise):
+\begin{equation}
+    \mathbb{E}_{(x,y),D} \left[\left(y - \hat{f}_D(x)\right)^2\right] = \mathbb{E}_x \left[\left(f^*(x) - \bar{f}(x)\right)^2\right] + \mathbb{E}_x \left[{\rm Var}_D \left(\hat{f}_D(x)\right)\right] + \mathbb{E}_{x,y} \left[\left(y - f^*(x)\right)^2\right]
+\end{equation}
+
+\begin{enumerate}[label=(\alph*)]
+    \item If the bias increases but the variance decreases at the same time, it is possible to reduce prediction error;
+    \item For an increasing amount of data, both the bias and the variance are expected to decrease;
+    \item A strictly larger hypothesis class $\mathcal{H}_{\rm old} \subset \mathcal{H}_{\rm new}$, then the bias must be smaller or equal to the bias considering the old hypothesis class.
+    \item If $n\rightarrow \infty$ and the finite hypothesis class includes the optimal model $f^*$, then the prediction error should only depend on the noise and the opitmal hypothesis.
+\end{enumerate}
+
+\section{Distribution shifts}
+
+\end{document}
